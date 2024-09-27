@@ -12,7 +12,7 @@ import io from 'socket.io-client';
 import '../styles/Game.css';
 import turnSound from '../assets/sounds/turnSound.mp3';
 
-const ENDPOINT = "https://tarot-game.onrender.com";
+const ENDPOINT = "https://tarot-game-iy1j.onrender.com";
 // const ENDPOINT = "http://localhost:5000";
 
 function Game() {
