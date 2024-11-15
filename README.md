@@ -37,9 +37,18 @@ Fix:
 - [X] Excuse issue if fold win but winner don't have excuse
 
 In progress:
-- [ ] Take small, guard
+
+To do:
+- [ ] Take small, guard + score system
 - [ ] Possibility to rejoin game if disconnected
 - [ ] Highlight valid cards
+- [ ] Reset last fold when new game start
+- [ ] Card figures with letters
+- [ ] Click ENTER to join the game
+- [ ] Fix auto-size layers
+- [ ] Fix oudlers number in victory popup
+- [ ] Fix icon size
+- [ ] Fix excuse consideration
 
 # Getting Started with Create React App
 
