@@ -1,15 +1,20 @@
 # Tarot Game Roadmap
 
-Last Update (08/07/2024)
+Last Update (16/11/2024)
+- [X] Reset last fold when new game start
+- [X] Card figures with letters
+- [X] Click ENTER to join the game
+
+Last Fix (16/11/2024)
+- [X] Fix excuse consideration in number of oudlers
+- [X] Fix auto-size layers
+- [X] Fix icon size
+
+Update:
 - [X] Show who takes what
 - [X] Reduce card sizes
 - [X] Show last fold
 - [X] Change beginner after each game
-
-Last Fix (08/07/2024)
-- [X] Block joiner during a game
-
-Update:
 - [X] Add nicknames
 - [X] 4-player Tarot
 - [X] Real-time points
@@ -23,6 +28,7 @@ Update:
 - [X] Rule can't play at first turn, color taken
 
 Fix:
+- [X] Block joiner during a game
 - [X] Excuse not counted (for oudlersNb)
 - [X] "Play" anti-spam
 - [X] Same size cards
@@ -37,18 +43,12 @@ Fix:
 - [X] Excuse issue if fold win but winner don't have excuse
 
 In progress:
+- [ ] Fix excuse calculation in takers score
 
 To do:
 - [ ] Take small, guard + score system
 - [ ] Possibility to rejoin game if disconnected
 - [ ] Highlight valid cards
-- [ ] Reset last fold when new game start
-- [ ] Card figures with letters
-- [ ] Click ENTER to join the game
-- [ ] Fix auto-size layers
-- [ ] Fix oudlers number in victory popup
-- [ ] Fix icon size
-- [ ] Fix excuse consideration
 
 # Getting Started with Create React App
 

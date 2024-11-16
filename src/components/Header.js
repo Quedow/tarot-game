@@ -2,6 +2,12 @@ import React from 'react';
 import '../styles/Game.css';
 
 export default function Header(props) {
+    const joinRequest = (e) => {
+        if (e.key === 'Enter') {
+            props.joinRequest();
+        }
+    };
+
     return (
         <>
             {/* <button onClick={ping}>Ping the Server</button> */}
@@ -12,9 +18,9 @@ export default function Header(props) {
                         type='text'
                         placeholder='Write your pseudo...'
                         onChange={props.updatePseudo} 
-                        onKeyDown={props.sendPseudo}
+                        onKeyDown={joinRequest}
                     ></input>
-                    <button onClick={props.setJoin}>Join</button>
+                    <button onClick={props.joinRequest}>Join</button>
                 </>
                 : <>
                     {props.gamePhase === 0 && 

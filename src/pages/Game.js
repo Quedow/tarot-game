@@ -39,12 +39,6 @@ function Game() {
 
     const [playTurnSound] = useSound(turnSound);
 
-    const sendPseudo = useCallback((e) => {    
-        if (e.key === 'Enter' && !join) {
-            setJoin(true);
-        }
-    }, [join]);
-
     const updatePseudo = useCallback((e) => {    
         if (!join && e.target.value.length <= 8) {
             setPseudo(e.target.value);
@@ -107,6 +101,7 @@ function Game() {
             setGamePhase(phase);
             if (phase === 1) {
                 setFold({ cards: [], pseudos: [] });
+                setLastFold([]);
                 setGameResult({ winner: '', score: 0, oudlersNb: 0 });
                 setTaker({ id: '', king: null });
             }
@@ -158,8 +153,7 @@ function Game() {
                     join={join}
                     score={gameResult.score}
                     updatePseudo={updatePseudo}
-                    sendPseudo={sendPseudo}
-                    setJoin={() => joinRequest()}
+                    joinRequest={() => joinRequest()}
                     playGame={playGame}
                     // joinGame={joinGame}
                 />

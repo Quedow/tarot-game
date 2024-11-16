@@ -16,7 +16,7 @@ export default function PlayerCards(props) {
                 <div key={player.id} className='player'>
                     <p>{player.pseudo}</p>
                     {player.id === props.taker.id && props.taker.king ? <img alt='profil' src={cardImages[props.taker.king]} /> : <img alt='profil' src={user} />}
-                    {props.turnId === player.id && (props.turnId === props.myId ? <p>My turn</p> : <p>Playing...</p>)}
+                    {props.turnId === player.id ? (props.turnId === props.myId ? <p>My turn</p> : <p>Playing...</p>) : <p></p>}
                 </div>
             ))}
         </div>

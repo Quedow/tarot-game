@@ -120,14 +120,22 @@ class Gameplay {
             const { deckIndex } = winner.player;
             const takerWin = this.game.takers.includes(deckIndex);
 
-            if (this.game.fold.some(play => play.card === 0)) {
-                if (this.game.hasExcuse && !takerWin) {
+            const foldCards = this.game.fold.map(play => play.card);
+            const excuseInFold = foldCards.includes(0);
+            
+            if (excuseInFold) {
+                const hasExcuse = this.game.hasExcuse;
+                if (takerWin) {
+                    if (hasExcuse) {
+                        this.game.won.push(...foldCards);
+                    } else {
+                        this.game.won.push(...foldCards.filter(card => card !== 0));
+                    }
+                } else if (hasExcuse) {
                     this.game.won.push(0);
-                } else if (takerWin) {
-                    this.game.won.push(...this.game.fold.filter(play => play.card !== 0).map(play => play.card));
                 }
             } else if (takerWin) {
-                this.game.won.push(...this.game.fold.map(play => play.card));
+                this.game.won.push(...foldCards);
             }
 
             this.game.score = this.calculateScore(this.game.won);
@@ -212,13 +220,13 @@ class Gameplay {
 
     isGameOver() {
         if (!this.decks.find(deck => deck.length !== 0)) {
-            const oudlersNb = [...this.game.won.filter(card => [0, 1, 21].includes(card))].length;
+            const oudlersNb = this.game.won.filter(card => [0, 1, 21].includes(card)).length;
             
             const scoreToWin = {
-                "0": 56,
-                "1": 51,
-                "2": 41,
-                "3": 36
+                0: 56,
+                1: 51,
+                2: 41,
+                3: 36
             };
 
             return { 
