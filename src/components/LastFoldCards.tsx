@@ -7,7 +7,6 @@ export default function FoldCards(props: any) {
     };
 
     const cardImages = props.fold.reduce((images: any, card: any) => {
-        // @ts-expect-error TS(2580): Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
         images[card] = require(`../assets/images/cards/${card}.jpg`);
         return images;
     }, {});

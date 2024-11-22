@@ -1,4 +1,4 @@
-const Gameplay = require("./src/logic/gameplay.js");
+const Gameplay = require("./src/logic/gameplay.ts");
 const path = require('path');
 const express = require('express');
 const http = require('http');

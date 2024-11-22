@@ -1,5 +1,4 @@
-// @ts-expect-error TS(1208): 'gameplay.ts' cannot be compiled under '--isolated... Remove this comment to see the full error message
-class Gameplay {
+export class Gameplay {
     cards: any;
     chien: any;
     chienNb: any;
@@ -291,6 +290,3 @@ Array.prototype.removeByValue = function (value: any) {
     this.splice(index, 1);
     return this;
 }
-
-// @ts-expect-error TS(2580): Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
-module.exports = Gameplay;
