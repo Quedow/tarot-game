@@ -1,9 +1,20 @@
+// @ts-expect-error TS(1208): 'gameplay.ts' cannot be compiled under '--isolated... Remove this comment to see the full error message
 class Gameplay {
-    constructor(clientNb) {
+    cards: any;
+    chien: any;
+    chienNb: any;
+    currentTurn: any;
+    decks: any;
+    game: any;
+    kingCalled: any;
+    playerNb: any;
+    totalTurn: any;
+    turnNb: any;
+    constructor(clientNb: any) {
         this.reset(clientNb);
     }
 
-    reset(clientNb){
+    reset(clientNb: any){
         this.cards = Array.from({ length: 22 }, (_, i) => i)
             .concat(Array.from({ length: 14 }, (_, i) => i + 101))
             .concat(Array.from({ length: 14 }, (_, i) => i + 201))
@@ -29,7 +40,7 @@ class Gameplay {
         this.currentTurn = 0;
     }
 
-    start(playerIndex) {
+    start(playerIndex: any) {
         this.shuffleCards();
         this.distributeCards();
         this.setTurn(playerIndex);
@@ -59,17 +70,17 @@ class Gameplay {
             }
         }
 
-        this.decks.forEach(deck => {
+        this.decks.forEach((deck: any) => {
             this.sortDeck(deck);
         });
     }
 
-    setTurn(playerIndex){ 
+    setTurn(playerIndex: any){ 
         this.currentTurn = playerIndex;
         this.nextTurn();
     }
 
-    setTaker(deckIndex, king) {
+    setTaker(deckIndex: any, king: any) {
         if (deckIndex !== null && king !== null) {
             this.game.takers = [deckIndex];
             this.kingCalled = this.playerNb === 5 ? king : null;
@@ -85,13 +96,13 @@ class Gameplay {
                 this.sortDeck(takerDeck);
     
                 if (this.playerNb === 5 && this.kingCalled !== null) {
-                    const allyDeck = this.decks.findIndex(deck => deck.includes(this.kingCalled));
+                    const allyDeck = this.decks.findIndex((deck: any) => deck.includes(this.kingCalled));
                     if (!this.game.takers.includes(allyDeck)) {
                         this.game.takers.push(allyDeck);
                     }
                 }
     
-                this.game.hasExcuse = this.game.takers.some(taker => this.decks[taker].includes(0));
+                this.game.hasExcuse = this.game.takers.some((taker: any) => this.decks[taker].includes(0));
                 return 2; // call phase 2, there is a taker
             }
         }
@@ -99,15 +110,15 @@ class Gameplay {
         return 1; // still in phase 1, all players didn't took or passed
     }
 
-    toChien(deckIndex, card){
+    toChien(deckIndex: any, card: any){
         if (![0, 1, 21, 114, 214, 314, 414].includes(card)) {
             this.game.won.push(card);
             this.decks[deckIndex].removeByValue(card);
         }
         return this.game.won.length === this.chienNb;
     }
-    
-    checkPlay(player, card) {
+
+    checkPlay(player: any, card: any) {
         if (this.game.fold.length >= this.playerNb) { this.game.fold = []; } // Continue to display the last fold before a new play
 
         if (!this.isValidCard(player.deckIndex, card)) { return false; }
@@ -120,7 +131,7 @@ class Gameplay {
             const { deckIndex } = winner.player;
             const takerWin = this.game.takers.includes(deckIndex);
 
-            const foldCards = this.game.fold.map(play => play.card);
+            const foldCards = this.game.fold.map((play: any) => play.card);
             const excuseInFold = foldCards.includes(0);
             
             if (excuseInFold) {
@@ -129,7 +140,7 @@ class Gameplay {
                     if (hasExcuse) {
                         this.game.won.push(...foldCards);
                     } else {
-                        this.game.won.push(...foldCards.filter(card => card !== 0));
+                        this.game.won.push(...foldCards.filter((card: any) => card !== 0));
                     }
                 } else if (hasExcuse) {
                     this.game.won.push(0);
@@ -148,7 +159,7 @@ class Gameplay {
         return true;
     }
 
-    isValidCard(deckIndex, newCard) {
+    isValidCard(deckIndex: any, newCard: any) {
         const firstPlay = this.game.fold[0]; // Get the card played by the first player
 
         if (this.kingCalled && this.totalTurn === this.playerNb + 1 && this.getColor(newCard) === this.getColor(this.kingCalled)) { return false }
@@ -158,20 +169,20 @@ class Gameplay {
         return this.getValidCards(firstPlay, deckIndex).includes(newCard); // Return if the card played is part of all valid cards
     }
 
-    getValidCards(firstPlay, deckIndex) {
+    getValidCards(firstPlay: any, deckIndex: any) {
         const firstColor = this.getColor(firstPlay.card); // Determine the color of the first card
     
         const playerDeck = this.decks[deckIndex]; // Get the player's deck
     
-        const bestAtout = Math.max(...this.game.fold.filter(play => play.card >= 1 && play.card <= 21).map(play => play.card));
+        const bestAtout = Math.max(...this.game.fold.filter((play: any) => play.card >= 1 && play.card <= 21).map((play: any) => play.card));
     
-        const hasSuperiorAtout = playerDeck.some(card => card >= 1 && card <= 21 && card > bestAtout);
+        const hasSuperiorAtout = playerDeck.some((card: any) => card >= 1 && card <= 21 && card > bestAtout);
     
-        const validCards = playerDeck.filter(card => {
+        const validCards = playerDeck.filter((card: any) => {
             const sameColor = this.getColor(card) === firstColor; // Check if the card is the same color as the first card
             const isAtout = card >= 1 && card <= 21; // Check if the card is between 1 and 21
-            const hasColor = playerDeck.some(card => this.getColor(card) === firstColor); // Check if the player has a card of the first color in their deck
-            const hasAtout = playerDeck.some(card => card >= 1 && card <= 21); // Check if the player has a card between 1 and 21 in their deck
+            const hasColor = playerDeck.some((card: any) => this.getColor(card) === firstColor); // Check if the player has a card of the first color in their deck
+            const hasAtout = playerDeck.some((card: any) => card >= 1 && card <= 21); // Check if the player has a card between 1 and 21 in their deck
     
             if (!sameColor && hasColor) { return false; } // You can't play another color card if you have the color asked
             if (!sameColor && !isAtout && hasAtout) { return false; } // You can't play another color card if you have at least one atout
@@ -183,8 +194,8 @@ class Gameplay {
         return validCards;
     }
 
-    getWinningCard(baize) {
-        let firstColor = this.getColor(baize.find(play => play.card != 0).card ?? 0);
+    getWinningCard(baize: any) {
+        let firstColor = this.getColor(baize.find((play: any) => play.card != 0).card ?? 0);
         let sortedBaize = [...baize].sort((a, b) => b.card - a.card);
     
         // Check for cards between 1 and 21
@@ -197,8 +208,8 @@ class Gameplay {
     
         return winningPlay ? winningPlay : sortedBaize[0];
     }
-    
-    calculateScore(wonFolds) {
+
+    calculateScore(wonFolds: any) {
         const points = {
             0: 4.5, 1: 4.5, 21: 4.5,
             111: 1.5, 211: 1.5, 311: 1.5, 411: 1.5,
@@ -210,6 +221,7 @@ class Gameplay {
         let score = 0;
         for (let card of wonFolds) {
             if (points.hasOwnProperty(card)) {
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 score += points[card];
             } else {
                 score += 0.5;
@@ -219,8 +231,8 @@ class Gameplay {
     }
 
     isGameOver() {
-        if (!this.decks.find(deck => deck.length !== 0)) {
-            const oudlersNb = this.game.won.filter(card => [0, 1, 21].includes(card)).length;
+        if (!this.decks.find((deck: any) => deck.length !== 0)) {
+            const oudlersNb = this.game.won.filter((card: any) => [0, 1, 21].includes(card)).length;
             
             const scoreToWin = {
                 0: 56,
@@ -230,6 +242,7 @@ class Gameplay {
             };
 
             return { 
+                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 winner: this.game.score >= scoreToWin[oudlersNb] ? "Taker" : "Defender",
                 oudlersNb: oudlersNb,
                 score: this.game.score
@@ -237,44 +250,47 @@ class Gameplay {
         }
         return null;
     }
-    
+
     nextTurn() {
         this.currentTurn = (this.currentTurn + 1) % this.playerNb;
         this.totalTurn++;
         return this.currentTurn;
     }
 
-    sortDeck(deck) { return deck.sort((a, b) => a - b); }
-    
-    getColor(card) { return Math.floor(card / 100); }
-    getRandomIndex(max) { return Math.floor(Math.random() * max); }
-    
+    sortDeck(deck: any) { return deck.sort((a: any, b: any) => a - b); }
+
+    getColor(card: any) { return Math.floor(card / 100); }
+    getRandomIndex(max: any) { return Math.floor(Math.random() * max); }
+
     getTurn() { return this.currentTurn; }
     getTaker(){ return this.game.takers[0]; }
-    
-    getDeck(playerIndex){ return this.decks[playerIndex]; }
+
+    getDeck(playerIndex: any){ return this.decks[playerIndex]; }
     getDecks(){ return this.decks; }
-    
+
     getChienNb(){ return this.chienNb; }
     getChien(){ return this.chien; }
     getFoldWon(){ return this.game.won; }
-    
+
     getChienAsFold(){ return { cards: this.chien, pseudos: [] }; }
-    getFold(){ return { cards: this.game.fold.map(play => play.card), pseudos: this.game.fold.map(play => play.player.pseudo) }; }
-    
+    getFold(){ return { cards: this.game.fold.map((play: any) => play.card), pseudos: this.game.fold.map((play: any) => play.player.pseudo) }; }
+
     isBaizeFull(){ return this.game.fold.length >= this.playerNb; }
     getScore(){ return this.game.score; }
 }
 
-Array.prototype.removeByIndex = function (index) {
+// @ts-expect-error TS(2339): Property 'removeByIndex' does not exist on type 'a... Remove this comment to see the full error message
+Array.prototype.removeByIndex = function (index: any) {
     this.splice(index, 1);
     return this;
 }
 
-Array.prototype.removeByValue = function (value) {
+// @ts-expect-error TS(2339): Property 'removeByValue' does not exist on type 'a... Remove this comment to see the full error message
+Array.prototype.removeByValue = function (value: any) {
     let index = this.indexOf(value);
     this.splice(index, 1);
     return this;
 }
 
+// @ts-expect-error TS(2580): Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = Gameplay;

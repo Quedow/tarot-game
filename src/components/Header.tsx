@@ -1,8 +1,8 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function Header(props) {
-    const joinRequest = (e) => {
+export default function Header(props: any) {
+    const joinRequest = (e: any) => {
         if (e.key === 'Enter') {
             props.joinRequest();
         }

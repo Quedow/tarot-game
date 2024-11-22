@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function Popup(props) {
+export default function Popup(props: any) {
   return (
     <div className="popup">
       <div className="popup-content">
