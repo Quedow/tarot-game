@@ -1,7 +1,12 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function Popup(props: any) {
+interface Props {
+  gameResult: {winner: string, score: number, oudlersNb: number};
+  playGame: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+export default function Popup(props: Props) {
   return (
     <div className="popup">
       <div className="popup-content">

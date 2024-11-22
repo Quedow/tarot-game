@@ -1,5 +1,5 @@
 export function generatePseudo() {
-    const pseudos = [
+    const pseudos: string[] = [
         "Rageux",
         "Chanceux",
         "Loser",

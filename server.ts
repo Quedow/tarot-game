@@ -1,35 +1,45 @@
-const Gameplay = require("./src/logic/gameplay.ts");
-const path = require('path');
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const cors = require('cors');
-require('dotenv').config();
+import { Socket } from "socket.io";
+import { generatePseudo } from "./src/logic/pseudoGenerator";
+import Gameplay from "./src/logic/gameplay"; // .ts extension is not needed here for imports
+import { Request, Response } from 'express';
+import path from 'path';
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io'; // Correctly import Server class
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: "*" } }); // Correctly initialize the server
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'build')));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+app.get('*', (req: Request, res: Response) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-const PORT = process.env.PORT || 5000;
+interface Client { 
+    id: string,
+    socket: Socket,
+    pseudo: string,
+    deckIndex: number | null
+};
 
-const MIN_PLAYERS = 3;
-const MAX_PLAYERS = 5;
+const MIN_PLAYERS: number = 3;
+const MAX_PLAYERS: number = 5;
 
-const clients = [];
-let isGameStart = false;
-let starter = 0;
+const clients: Client[] = [];
+let isGameStart: boolean = false;
+let starter: number = 0;
 
-io.on("connection", (socket) => {
+io.on("connection", (socket: Socket) => {
     if (!isGameStart && clients.length < MAX_PLAYERS) {
         socket.emit("setJoin", true);
-        const pseudo = socket.handshake.query.pseudo;
+        const pseudo = String(socket.handshake.query.pseudo ?? generatePseudo());
         
         clients.push({ id: socket.id, socket: socket, pseudo: pseudo, deckIndex: null });
         console.log(`New client connected: ${socket.id} (${pseudo})`);
@@ -46,11 +56,11 @@ io.on("connection", (socket) => {
 
     // socket.on("joinGame", () => { joinGame(socket); });
 
-    socket.on("takeOrPass", (data) => { takeGame(socket, data); });
+    socket.on("takeOrPass", (data: {isTaken: boolean, king: number}) => { takeGame(socket, data); });
 
-    socket.on("toChien", (card) => { toChien(socket, card); })
+    socket.on("toChien", (card: number) => { toChien(socket, card); })
 
-    socket.on("playCard", (card) => { playCard(socket, card); });
+    socket.on("playCard", (card: number) => { playCard(socket, card); });
 
     socket.on("disconnect", () => {
         const index = clients.findIndex(client => client.id === socket.id);
@@ -67,7 +77,7 @@ io.on("connection", (socket) => {
 
 const game = new Gameplay(MIN_PLAYERS);
 
-function playGame(socket) {
+function playGame(socket: Socket) {
     if (clients.length >= MIN_PLAYERS && clients.length <= MAX_PLAYERS) {
         isGameStart = true;
         game.reset(clients.length);
@@ -87,10 +97,10 @@ function emitDecks() {
     });
 }
 
-function emitDeckToClient(client) {
+function emitDeckToClient(client: Client) {
     const decks = game.getDecks();
     const deckIndexesUsed = clients.map(client => client.deckIndex);
-    const deckIndexAvailable = decks.findIndex((value, index) => !deckIndexesUsed.includes(index));
+    const deckIndexAvailable = decks.findIndex((value: number[], index: number) => !deckIndexesUsed.includes(index));
 
     client.socket.emit("setDeck", decks[deckIndexAvailable]);
     client.deckIndex = deckIndexAvailable;
@@ -110,40 +120,45 @@ function emitDeckToClient(client) {
     }
 } */
 
-function takeGame(socket, data) {
-    const deckIndex = data.isTaken ? getClientById(socket.id).deckIndex : null;
+function takeGame(socket: Socket, data: {isTaken: boolean, king: number}) {
+    const client = getClientById(socket.id);
+    const deckIndex = data.isTaken && client ? client.deckIndex : null;
     const newPhase = game.setTaker(deckIndex, data.king);
 
     if (newPhase === -1) {
         playGame(socket);
     } else if (newPhase === 2) {
-        const client = clients.find(client => client.deckIndex === game.getTaker());
-        // io.emit("getChien", { chien: game.getChien(), takerId: client.id });
-        io.emit("setFold", game.getChienAsFold());
-        client.socket.emit("setChien", game.getDeck(client.deckIndex));
+        const takerClient = clients.find(client => client.deckIndex === game.getTaker());
+        if (takerClient) {
+            // io.emit("getChien", { chien: game.getChien(), takerId: client.id });
+            io.emit("setFold", game.getChienAsFold());
+            takerClient.socket.emit("setChien", game.getDeck(takerClient.deckIndex!));
+        }
     }
 
     if (data.isTaken) { io.emit("setTaker", socket.id, data.king); }
     emitTurn();
 }
 
-function toChien(socket, card) {
+function toChien(socket: Socket, card: number) {
     // console.log(`Card ${card} --> chien`);
     
     const client = getClientById(socket.id);
-    const isCompleted = game.toChien(client.deckIndex, card);
-    client.socket.emit("setDeck", game.getDeck(client.deckIndex));
+    if (!client) { return; }
+
+    const isCompleted = game.toChien(client.deckIndex!, card);
+    client.socket.emit("setDeck", game.getDeck(client.deckIndex!));
 
     if (isCompleted) {
         io.emit("setPhase", 3);
     }
 }
 
-function playCard(socket, card) {
+function playCard(socket: Socket, card: number) {
     // console.log(`Card ${card} --> baize`);
     
     const client = getClientById(socket.id);
-    if (client.deckIndex === game.getTurn()) {
+    if (client && client.deckIndex === game.getTurn()) {
         const validCard = game.checkPlay({ pseudo: client.pseudo, deckIndex: client.deckIndex }, card);
         if (validCard) {
             socket.emit("setDeck", game.getDeck(client.deckIndex));
@@ -171,9 +186,11 @@ function emitTurn() {
     }
 }
 
-function getClientById(id) {
-    return clients.find(client => client.id === id);
+function getClientById(id: string): Client | null {
+    return clients.find(client => client.id === id) ?? null;
 }
+
+const PORT: number = parseInt(process.env.PORT || "5000", 10);
 
 server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);

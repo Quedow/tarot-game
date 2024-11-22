@@ -1,7 +1,17 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function Header(props: any) {
+interface Props {
+    gamePhases: {[key: number]: string};
+    gamePhase: number;
+    join: boolean;
+    score: number;
+    joinRequest: Function;
+    updatePseudo: React.ChangeEventHandler<HTMLInputElement>;
+    playGame: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+export default function Header(props: Props) {
     const joinRequest = (e: any) => {
         if (e.key === 'Enter') {
             props.joinRequest();
@@ -20,7 +30,7 @@ export default function Header(props: any) {
                         onChange={props.updatePseudo} 
                         onKeyDown={joinRequest}
                     ></input>
-                    <button onClick={props.joinRequest}>Join</button>
+                    <button onClick={() => props.joinRequest}>Join</button>
                 </>
                 : <>
                     {props.gamePhase === 0 && 

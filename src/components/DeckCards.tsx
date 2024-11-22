@@ -1,21 +1,26 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function DeckCards(props: any) {
+interface Props {
+    deck: number[];
+    playCard: Function;
+}
+
+export default function DeckCards(props: Props) {
     const style = {
         maxWidth: `calc(85% / ${props.deck.length})`,
     };
 
-    const cardImages = props.deck.reduce((images: any, card: any) => {
+    const cardImages: {[key: number]: string} = props.deck.reduce((images: {[key: number]: string}, card: number) => {
         images[card] = require(`../assets/images/cards/${card}.jpg`);
         return images;
     }, {});
 
     return (
         <div className="deck-container">
-            {props.deck.map((card: any) => <img 
+            {props.deck.map((card: number) => <img 
                 key={card} 
-                alt={card} 
+                alt={String(card)} 
                 src={cardImages[card]} 
                 onClick={() => props.playCard(card)} 
                 style={style}

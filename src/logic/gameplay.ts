@@ -1,19 +1,32 @@
-export class Gameplay {
-    cards: any;
-    chien: any;
-    chienNb: any;
-    currentTurn: any;
-    decks: any;
-    game: any;
-    kingCalled: any;
-    playerNb: any;
-    totalTurn: any;
-    turnNb: any;
-    constructor(clientNb: any) {
-        this.reset(clientNb);
-    }
+interface Player {
+    pseudo: string;
+    deckIndex: number;
+}
 
-    reset(clientNb: any){
+interface Play {
+    player: Player;
+    card: number;
+}
+
+export default class Gameplay {
+    cards: number[];
+    chien: number[];
+    chienNb: number;
+    currentTurn: number;
+    decks: number[][];
+    game: {
+        fold: Play[];
+        takers: number[];
+        won: number[];
+        hasExcuse: boolean;
+        score: number;
+    };
+    kingCalled: number | null;
+    playerNb: number;
+    totalTurn: number;
+    turnNb: number;
+
+    constructor(clientNb: number) {
         this.cards = Array.from({ length: 22 }, (_, i) => i)
             .concat(Array.from({ length: 14 }, (_, i) => i + 101))
             .concat(Array.from({ length: 14 }, (_, i) => i + 201))
@@ -39,7 +52,7 @@ export class Gameplay {
         this.currentTurn = 0;
     }
 
-    start(playerIndex: any) {
+    start(playerIndex: number) {
         this.shuffleCards();
         this.distributeCards();
         this.setTurn(playerIndex);
@@ -69,17 +82,17 @@ export class Gameplay {
             }
         }
 
-        this.decks.forEach((deck: any) => {
+        this.decks.forEach((deck: number[]) => {
             this.sortDeck(deck);
         });
     }
 
-    setTurn(playerIndex: any){ 
+    setTurn(playerIndex: number){ 
         this.currentTurn = playerIndex;
         this.nextTurn();
     }
 
-    setTaker(deckIndex: any, king: any) {
+    setTaker(deckIndex: number | null, king: number | null): number {
         if (deckIndex !== null && king !== null) {
             this.game.takers = [deckIndex];
             this.kingCalled = this.playerNb === 5 ? king : null;
@@ -95,13 +108,13 @@ export class Gameplay {
                 this.sortDeck(takerDeck);
     
                 if (this.playerNb === 5 && this.kingCalled !== null) {
-                    const allyDeck = this.decks.findIndex((deck: any) => deck.includes(this.kingCalled));
+                    const allyDeck = this.decks.findIndex((deck: number[]) => deck.includes(this.kingCalled!));
                     if (!this.game.takers.includes(allyDeck)) {
                         this.game.takers.push(allyDeck);
                     }
                 }
     
-                this.game.hasExcuse = this.game.takers.some((taker: any) => this.decks[taker].includes(0));
+                this.game.hasExcuse = this.game.takers.some((taker: number) => this.decks[taker].includes(0));
                 return 2; // call phase 2, there is a taker
             }
         }
@@ -109,7 +122,7 @@ export class Gameplay {
         return 1; // still in phase 1, all players didn't took or passed
     }
 
-    toChien(deckIndex: any, card: any){
+    toChien(deckIndex: number, card: number): boolean {
         if (![0, 1, 21, 114, 214, 314, 414].includes(card)) {
             this.game.won.push(card);
             this.decks[deckIndex].removeByValue(card);
@@ -117,7 +130,7 @@ export class Gameplay {
         return this.game.won.length === this.chienNb;
     }
 
-    checkPlay(player: any, card: any) {
+    checkPlay(player: Player, card: number): boolean {
         if (this.game.fold.length >= this.playerNb) { this.game.fold = []; } // Continue to display the last fold before a new play
 
         if (!this.isValidCard(player.deckIndex, card)) { return false; }
@@ -130,7 +143,7 @@ export class Gameplay {
             const { deckIndex } = winner.player;
             const takerWin = this.game.takers.includes(deckIndex);
 
-            const foldCards = this.game.fold.map((play: any) => play.card);
+            const foldCards = this.game.fold.map((play: Play) => play.card);
             const excuseInFold = foldCards.includes(0);
             
             if (excuseInFold) {
@@ -139,7 +152,7 @@ export class Gameplay {
                     if (hasExcuse) {
                         this.game.won.push(...foldCards);
                     } else {
-                        this.game.won.push(...foldCards.filter((card: any) => card !== 0));
+                        this.game.won.push(...foldCards.filter((card: number) => card !== 0));
                     }
                 } else if (hasExcuse) {
                     this.game.won.push(0);
@@ -158,7 +171,7 @@ export class Gameplay {
         return true;
     }
 
-    isValidCard(deckIndex: any, newCard: any) {
+    isValidCard(deckIndex: number, newCard: number): boolean {
         const firstPlay = this.game.fold[0]; // Get the card played by the first player
 
         if (this.kingCalled && this.totalTurn === this.playerNb + 1 && this.getColor(newCard) === this.getColor(this.kingCalled)) { return false }
@@ -168,20 +181,20 @@ export class Gameplay {
         return this.getValidCards(firstPlay, deckIndex).includes(newCard); // Return if the card played is part of all valid cards
     }
 
-    getValidCards(firstPlay: any, deckIndex: any) {
+    getValidCards(firstPlay: Play, deckIndex: number): number[] {
         const firstColor = this.getColor(firstPlay.card); // Determine the color of the first card
     
         const playerDeck = this.decks[deckIndex]; // Get the player's deck
     
-        const bestAtout = Math.max(...this.game.fold.filter((play: any) => play.card >= 1 && play.card <= 21).map((play: any) => play.card));
+        const bestAtout = Math.max(...this.game.fold.filter((play: Play) => play.card >= 1 && play.card <= 21).map((play: Play) => play.card));
     
-        const hasSuperiorAtout = playerDeck.some((card: any) => card >= 1 && card <= 21 && card > bestAtout);
+        const hasSuperiorAtout = playerDeck.some((card: number) => card >= 1 && card <= 21 && card > bestAtout);
     
-        const validCards = playerDeck.filter((card: any) => {
+        const validCards = playerDeck.filter((card: number) => {
             const sameColor = this.getColor(card) === firstColor; // Check if the card is the same color as the first card
             const isAtout = card >= 1 && card <= 21; // Check if the card is between 1 and 21
-            const hasColor = playerDeck.some((card: any) => this.getColor(card) === firstColor); // Check if the player has a card of the first color in their deck
-            const hasAtout = playerDeck.some((card: any) => card >= 1 && card <= 21); // Check if the player has a card between 1 and 21 in their deck
+            const hasColor = playerDeck.some((card: number) => this.getColor(card) === firstColor); // Check if the player has a card of the first color in their deck
+            const hasAtout = playerDeck.some((card: number) => card >= 1 && card <= 21); // Check if the player has a card between 1 and 21 in their deck
     
             if (!sameColor && hasColor) { return false; } // You can't play another color card if you have the color asked
             if (!sameColor && !isAtout && hasAtout) { return false; } // You can't play another color card if you have at least one atout
@@ -193,8 +206,8 @@ export class Gameplay {
         return validCards;
     }
 
-    getWinningCard(baize: any) {
-        let firstColor = this.getColor(baize.find((play: any) => play.card != 0).card ?? 0);
+    getWinningCard(baize: Play[]): Play {
+        let firstColor = this.getColor(baize.find((play: Play) => play.card != 0)?.card ?? 0);
         let sortedBaize = [...baize].sort((a, b) => b.card - a.card);
     
         // Check for cards between 1 and 21
@@ -208,8 +221,8 @@ export class Gameplay {
         return winningPlay ? winningPlay : sortedBaize[0];
     }
 
-    calculateScore(wonFolds: any) {
-        const points = {
+    calculateScore(wonFolds: number[]): number {
+        const points: {[key: number]: number} = {
             0: 4.5, 1: 4.5, 21: 4.5,
             111: 1.5, 211: 1.5, 311: 1.5, 411: 1.5,
             112: 2.5, 212: 2.5, 312: 2.5, 412: 2.5,
@@ -220,7 +233,6 @@ export class Gameplay {
         let score = 0;
         for (let card of wonFolds) {
             if (points.hasOwnProperty(card)) {
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 score += points[card];
             } else {
                 score += 0.5;
@@ -229,11 +241,11 @@ export class Gameplay {
         return score;
     }
 
-    isGameOver() {
-        if (!this.decks.find((deck: any) => deck.length !== 0)) {
-            const oudlersNb = this.game.won.filter((card: any) => [0, 1, 21].includes(card)).length;
+    isGameOver(): {winner: string, oudlersNb: number, score: number} | null {
+        if (!this.decks.find((deck: number[]) => deck.length !== 0)) {
+            const oudlersNb = this.game.won.filter((card: number) => [0, 1, 21].includes(card)).length;
             
-            const scoreToWin = {
+            const scoreToWin: {[key: number]: number} = {
                 0: 56,
                 1: 51,
                 2: 41,
@@ -241,7 +253,6 @@ export class Gameplay {
             };
 
             return { 
-                // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 winner: this.game.score >= scoreToWin[oudlersNb] ? "Taker" : "Defender",
                 oudlersNb: oudlersNb,
                 score: this.game.score
@@ -250,42 +261,73 @@ export class Gameplay {
         return null;
     }
 
-    nextTurn() {
+    nextTurn(): number {
         this.currentTurn = (this.currentTurn + 1) % this.playerNb;
         this.totalTurn++;
         return this.currentTurn;
     }
 
-    sortDeck(deck: any) { return deck.sort((a: any, b: any) => a - b); }
+    sortDeck(deck: number[]): number[] { return deck.sort((a: number, b: number) => a - b); }
 
-    getColor(card: any) { return Math.floor(card / 100); }
-    getRandomIndex(max: any) { return Math.floor(Math.random() * max); }
+    getColor(card: number): number { return Math.floor(card / 100); }
+    getRandomIndex(max: number): number { return Math.floor(Math.random() * max); }
 
-    getTurn() { return this.currentTurn; }
-    getTaker(){ return this.game.takers[0]; }
+    getTurn(): number { return this.currentTurn; }
+    getTaker(): number { return this.game.takers[0]; }
 
-    getDeck(playerIndex: any){ return this.decks[playerIndex]; }
-    getDecks(){ return this.decks; }
+    getDeck(playerIndex: number): number[] { return this.decks[playerIndex]; }
+    getDecks(): number[][] { return this.decks; }
 
-    getChienNb(){ return this.chienNb; }
-    getChien(){ return this.chien; }
-    getFoldWon(){ return this.game.won; }
+    getChienNb(): number { return this.chienNb; }
+    getChien(): number[] { return this.chien; }
+    getFoldWon(): number[] { return this.game.won; }
 
-    getChienAsFold(){ return { cards: this.chien, pseudos: [] }; }
-    getFold(){ return { cards: this.game.fold.map((play: any) => play.card), pseudos: this.game.fold.map((play: any) => play.player.pseudo) }; }
+    getChienAsFold(): {cards: number[], pseudos: string[]} { return { cards: this.chien, pseudos: [] }; }
+    getFold(): {cards: number[], pseudos: string[]} { return { cards: this.game.fold.map((play: Play) => play.card), pseudos: this.game.fold.map((play: Play) => play.player.pseudo) }; }
 
-    isBaizeFull(){ return this.game.fold.length >= this.playerNb; }
-    getScore(){ return this.game.score; }
+    isBaizeFull(): boolean { return this.game.fold.length >= this.playerNb; }
+    getScore(): number { return this.game.score; }
+
+    reset(clientNb: number) {
+        this.cards = Array.from({ length: 22 }, (_, i) => i)
+            .concat(Array.from({ length: 14 }, (_, i) => i + 101))
+            .concat(Array.from({ length: 14 }, (_, i) => i + 201))
+            .concat(Array.from({ length: 14 }, (_, i) => i + 301))
+            .concat(Array.from({ length: 14 }, (_, i) => i + 401));
+
+        this.playerNb = clientNb;
+        this.chienNb = 78%(3*this.playerNb);
+        this.turnNb = (78-this.chienNb)/(3*this.playerNb);
+
+        this.decks = Array.from({ length: this.playerNb }, () => []);
+        this.chien = [];
+        this.kingCalled = null;
+        this.game = {
+            fold: [],
+            takers: [],
+            won: [],
+            hasExcuse: false,
+            score: 0
+        };
+        
+        this.totalTurn = 0
+        this.currentTurn = 0;
+    }
 }
 
-// @ts-expect-error TS(2339): Property 'removeByIndex' does not exist on type 'a... Remove this comment to see the full error message
-Array.prototype.removeByIndex = function (index: any) {
+declare global {
+    interface Array<T> {
+      removeByIndex(index: number): number[];
+      removeByValue(value: number) : number[];
+    }
+  }
+
+Array.prototype.removeByIndex = function(index: number): number[] {
     this.splice(index, 1);
     return this;
 }
 
-// @ts-expect-error TS(2339): Property 'removeByValue' does not exist on type 'a... Remove this comment to see the full error message
-Array.prototype.removeByValue = function (value: any) {
+Array.prototype.removeByValue = function (value: number): number[] {
     let index = this.indexOf(value);
     this.splice(index, 1);
     return this;

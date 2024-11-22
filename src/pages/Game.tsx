@@ -16,7 +16,7 @@ const ENDPOINT = "https://tarot-game-iy1j.onrender.com";
 // const ENDPOINT = "http://localhost:5000";
 
 function Game() {
-    const gamePhases = {
+    const gamePhases: {[key: string]: string} = {
         "-1": 'Waiting for the dog...',
         "1": 'Take or pass ?',
         "2": 'Making your dog...',
@@ -25,16 +25,16 @@ function Game() {
     };
 
     const [socket, setSocket] = useState<Socket | null>(null);
-    const [pseudo, setPseudo] = useState(generatePseudo());
-    const [myId, setMyId] = useState('');
-    const [players, setPlayers] = useState([]);
-    const [gamePhase, setGamePhase] = useState(0);
-    const [deck, setDeck] = useState([]);
-    const [fold, setFold] = useState({ cards: [], pseudos: [] });
-    const [turnId, setTurnId] = useState('');
-    const [lastFold, setLastFold] = useState([]);
-    const [gameResult, setGameResult] = useState({ winner: '', score: 0, oudlersNb: 0 });
-    const [taker, setTaker] = useState({ id: '', king: null });
+    const [pseudo, setPseudo] = useState<string>(generatePseudo());
+    const [myId, setMyId] = useState<string>('');
+    const [players, setPlayers] = useState<{id: string, pseudo: string}[]>([]);
+    const [gamePhase, setGamePhase] = useState<number>(0);
+    const [deck, setDeck] = useState<number[]>([]);
+    const [fold, setFold] = useState<{cards: number[], pseudos: string[]}>({ cards: [], pseudos: [] });
+    const [turnId, setTurnId] = useState<string>('');
+    const [lastFold, setLastFold] = useState<number[]>([]);
+    const [gameResult, setGameResult] = useState<{winner: string, score: number, oudlersNb: number}>({ winner: '', score: 0, oudlersNb: 0 });
+    const [taker, setTaker] = useState<{id: string, king: number | null }>({ id: '', king: null });
     const [join, setJoin] = useState(false);
 
     const [playTurnSound] = useSound(turnSound);
@@ -64,14 +64,14 @@ function Game() {
         }
     }, [socket]);
 
-    const takeOrPass = useCallback((isTaken: any, card: any) => {
+    const takeOrPass = useCallback((isTaken: boolean, card: number) => {
         if (socket && gamePhase === 1 && isMyTurn()) {
             socket.emit("takeOrPass", { isTaken: isTaken, king: card });
             setGamePhase(-1);
         }
     }, [gamePhase, isMyTurn, socket]);
 
-    const playCard = (cardValue: any) => {
+    const playCard = (cardValue: number) => {
         if (socket && gamePhase === 3 && isMyTurn()) {
             socket.emit("playCard", cardValue);
         } else if (socket && gamePhase === 2) {
@@ -91,7 +91,7 @@ function Game() {
 
     useEffect(() => {
         if (!socket) return;
-        socket.on("setJoin", (join: any) => {
+        socket.on("setJoin", (join: boolean) => {
             setJoin(join);
             if (!join) {
                 socket.disconnect();
@@ -99,7 +99,7 @@ function Game() {
         });
         socket.on("setId", setMyId); // <=> socket.on("getId", (id) => { setId(id); });
         socket.on("setPlayers", setPlayers);
-        socket.on("setPhase", (phase: any) => {
+        socket.on("setPhase", (phase: number) => {
             setGamePhase(phase);
             if (phase === 1) {
                 setFold({ cards: [], pseudos: [] });
@@ -108,27 +108,27 @@ function Game() {
                 setTaker({ id: '', king: null });
             }
         });
-        socket.on("setDeck", (deck: any) => setDeck(deck));
+        socket.on("setDeck", (deck) => setDeck(deck));
         // socket.on("setTurnId", setTurnId);
-        socket.on("setTurnId", (turnId: any) => {
+        socket.on("setTurnId", (turnId: string) => {
             setTurnId(turnId);
             if (turnId === myId) { playTurnSound(); }
         });
-        socket.on("setTaker", (takerId: any, kingCalled: any) => {
+        socket.on("setTaker", (takerId: string, kingCalled: number) => {
             setTaker({ id: takerId, king: kingCalled});
         });
-        socket.on("setChien", (deck: any) => {
+        socket.on("setChien", (deck: number[]) => {
             setDeck(deck);
             setGamePhase(2);
         });
-        socket.on("setFold", (data: any) => {
+        socket.on("setFold", (data: {cards: number[], pseudos: string[]}) => {
             setFold(data);
             if (data.cards.length === players.length) {
                 setLastFold(data.cards);
             }
         });
-        socket.on("setScore", (score: any) => updateState(setGameResult, { score: score }));
-        socket.on("setGameOver", (data: any) => {
+        socket.on("setScore", (score: number) => updateState(setGameResult, { score: score }));
+        socket.on("setGameOver", (data: {winner: string, oudlersNb: number, score: number}) => {
             setGameResult(data);
             setGamePhase(4);
         });

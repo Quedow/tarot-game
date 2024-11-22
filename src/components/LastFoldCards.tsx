@@ -1,21 +1,25 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function FoldCards(props: any) {
+interface Props {
+    fold: number[];
+}
+
+export default function FoldCards(props: Props) {
     const style = {
         maxWidth: `calc(85% / ${props.fold.length})`,
     };
 
-    const cardImages = props.fold.reduce((images: any, card: any) => {
+    const cardImages: {[key: number]: string} = props.fold.reduce((images: {[key: number]: string}, card: number) => {
         images[card] = require(`../assets/images/cards/${card}.jpg`);
         return images;
     }, {});
 
     return (
         <div className="last-fold-container">
-            {props.fold.map((card: any, index: any) => (
+            {props.fold.map((card: number, index: number) => (
                 <div key={card}  style={style}>
-                    <img alt={card} src={cardImages[card]} />
+                    <img alt={String(card)} src={cardImages[card]} />
                 </div>
             ))}
         </div>

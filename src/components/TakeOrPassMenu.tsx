@@ -1,8 +1,13 @@
 import React from 'react';
 import '../styles/Game.css';
 
-export default function TakeOrPassMenu(props: any) {
-    const cardImages: { [key: number]: string; } = {
+interface Props {
+    gamePhase: number;
+    takeOrPass: Function;
+}
+
+export default function TakeOrPassMenu(props: Props) {
+    const cardImages: {[key: number]: string} = {
         114: require(`../assets/images/114.png`),
         214: require(`../assets/images/214.png`),
         314: require(`../assets/images/314.png`),
