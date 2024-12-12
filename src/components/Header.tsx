@@ -30,7 +30,7 @@ export default function Header(props: Props) {
                         onChange={props.updatePseudo} 
                         onKeyDown={joinRequest}
                     ></input>
-                    <button onClick={() => props.joinRequest}>Join</button>
+                    <button onClick={() => props.joinRequest()}>Join</button>
                 </>
                 : <>
                     {props.gamePhase === 0 && 
