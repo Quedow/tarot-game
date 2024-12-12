@@ -6,7 +6,7 @@ interface Props {
     gamePhase: number;
     join: boolean;
     score: number;
-    joinRequest: Function;
+    joinRequest: () => void;
     updatePseudo: React.ChangeEventHandler<HTMLInputElement>;
     playGame: React.MouseEventHandler<HTMLButtonElement>;
 }
