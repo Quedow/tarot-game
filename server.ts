@@ -1,20 +1,23 @@
 import { Socket } from "socket.io";
 import { generatePseudo } from "./src/logic/pseudoGenerator";
-import Gameplay from "./src/logic/gameplay"; // .ts extension is not needed here for imports
+import Gameplay from "./src/logic/gameplay";
 import { Request, Response } from 'express';
-import path from 'path';
+import path, { dirname } from 'path';
 import express from 'express';
 import http from 'http';
-import { Server } from 'socket.io'; // Correctly import Server class
+import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } }); // Correctly initialize the server
+const io = new Server(server, { cors: { origin: "*" } });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -192,6 +195,6 @@ function getClientById(id: string): Client | null {
 
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
 
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, "localhost", () => {
     console.log(`Server running on port ${PORT}`);
 });
