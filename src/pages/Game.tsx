@@ -1,4 +1,4 @@
-import React, { useEffect , useState, useCallback } from 'react';
+import { useEffect , useState, useCallback } from 'react';
 import useSound from 'use-sound';
 import Header from '../components/Header';
 import TakeOrPassMenu from '../components/TakeOrPassMenu';
@@ -12,10 +12,9 @@ import { io, Socket } from "socket.io-client";
 import '../styles/Game.css';
 import turnSound from '../assets/sounds/turnSound.mp3';
 
-const ENDPOINT = "https://tarot-game-iy1j.onrender.com";
-// const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = process.env.REACT_APP_ENDPOINT ?? "http://localhost:5000";
 
-function Game() {
+export default function Game() {
     const gamePhases: {[key: string]: string} = {
         "-1": 'Waiting for the dog...',
         "1": 'Take or pass ?',
@@ -64,7 +63,7 @@ function Game() {
         }
     }, [socket]);
 
-    const takeOrPass = useCallback((isTaken: boolean, card: number) => {
+    const takeOrPass = useCallback((isTaken: boolean, card: number | null) => {
         if (socket && gamePhase === 1 && isMyTurn()) {
             socket.emit("takeOrPass", { isTaken: isTaken, king: card });
             setGamePhase(-1);
@@ -155,7 +154,7 @@ function Game() {
                     join={join}
                     score={gameResult.score}
                     updatePseudo={updatePseudo}
-                    joinRequest={() => joinRequest()}
+                    joinRequest={joinRequest}
                     playGame={playGame}
                     // joinGame={joinGame}
                 />
@@ -169,5 +168,3 @@ function Game() {
         </div>
     );
 }
-
-export default Game;

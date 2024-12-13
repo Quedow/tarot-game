@@ -1,9 +1,8 @@
-import React from 'react';
 import '../styles/Game.css';
 
 interface Props {
   gameResult: {winner: string, score: number, oudlersNb: number};
-  playGame: React.MouseEventHandler<HTMLButtonElement>;
+  playGame: () => void;
 }
 
 export default function Popup(props: Props) {

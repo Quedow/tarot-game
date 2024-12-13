@@ -59,7 +59,7 @@ io.on("connection", (socket: Socket) => {
 
     // socket.on("joinGame", () => { joinGame(socket); });
 
-    socket.on("takeOrPass", (data: {isTaken: boolean, king: number}) => { takeGame(socket, data); });
+    socket.on("takeOrPass", (data: {isTaken: boolean, king: number | null}) => { takeGame(socket, data); });
 
     socket.on("toChien", (card: number) => { toChien(socket, card); })
 
@@ -123,7 +123,7 @@ function emitDeckToClient(client: Client) {
     }
 } */
 
-function takeGame(socket: Socket, data: {isTaken: boolean, king: number}) {
+function takeGame(socket: Socket, data: {isTaken: boolean, king: number | null}) {
     const client = getClientById(socket.id);
     const deckIndex = data.isTaken && client ? client.deckIndex : null;
     const newPhase = game.setTaker(deckIndex, data.king);

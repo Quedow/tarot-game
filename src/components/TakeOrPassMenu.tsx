@@ -1,9 +1,8 @@
-import React from 'react';
 import '../styles/Game.css';
 
 interface Props {
     gamePhase: number;
-    takeOrPass: Function;
+    takeOrPass: (isTaken: boolean, card: number | null) => void;
 }
 
 export default function TakeOrPassMenu(props: Props) {

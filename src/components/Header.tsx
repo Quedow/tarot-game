@@ -1,4 +1,3 @@
-import React from 'react';
 import '../styles/Game.css';
 
 interface Props {
@@ -7,8 +6,8 @@ interface Props {
     join: boolean;
     score: number;
     joinRequest: () => void;
-    updatePseudo: React.ChangeEventHandler<HTMLInputElement>;
-    playGame: React.MouseEventHandler<HTMLButtonElement>;
+    updatePseudo: (e: any) => void;
+    playGame: () => void;
 }
 
 export default function Header(props: Props) {
@@ -30,7 +29,7 @@ export default function Header(props: Props) {
                         onChange={props.updatePseudo} 
                         onKeyDown={joinRequest}
                     ></input>
-                    <button onClick={() => props.joinRequest()}>Join</button>
+                    <button onClick={props.joinRequest}>Join</button>
                 </>
                 : <>
                     {props.gamePhase === 0 && 

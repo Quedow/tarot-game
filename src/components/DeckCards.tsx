@@ -1,9 +1,8 @@
-import React from 'react';
 import '../styles/Game.css';
 
 interface Props {
     deck: number[];
-    playCard: Function;
+    playCard: (card: number) => void;
 }
 
 export default function DeckCards(props: Props) {
