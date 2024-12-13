@@ -195,6 +195,6 @@ function getClientById(id: string): Client | null {
 
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
 
-server.listen(PORT, "localhost", () => {
+server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
 });
