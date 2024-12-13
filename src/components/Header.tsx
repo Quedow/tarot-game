@@ -1,8 +1,17 @@
-import React from 'react';
 import '../styles/Game.css';
 
-export default function Header(props) {
-    const joinRequest = (e) => {
+interface Props {
+    gamePhases: {[key: number]: string};
+    gamePhase: number;
+    join: boolean;
+    score: number;
+    joinRequest: () => void;
+    updatePseudo: (e: any) => void;
+    playGame: () => void;
+}
+
+export default function Header(props: Props) {
+    const joinRequest = (e: any) => {
         if (e.key === 'Enter') {
             props.joinRequest();
         }

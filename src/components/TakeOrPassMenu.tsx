@@ -1,8 +1,12 @@
-import React from 'react';
 import '../styles/Game.css';
 
-export default function TakeOrPassMenu(props) {
-    const cardImages = {
+interface Props {
+    gamePhase: number;
+    takeOrPass: (isTaken: boolean, card: number | null) => void;
+}
+
+export default function TakeOrPassMenu(props: Props) {
+    const cardImages: {[key: number]: string} = {
         114: require(`../assets/images/114.png`),
         214: require(`../assets/images/214.png`),
         314: require(`../assets/images/314.png`),
@@ -17,7 +21,7 @@ export default function TakeOrPassMenu(props) {
                     {[114, 214, 314, 414].map((card) => (
                         <button key={card} onClick={() => props.takeOrPass(true, card)}>
                             Take
-                            <img alt={card} src={cardImages[card]} />
+                            <img alt={String(card)} src={cardImages[card]} />
                         </button>
                     ))}
                 </>

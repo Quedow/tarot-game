@@ -1,7 +1,11 @@
-import React from 'react';
 import '../styles/Game.css';
 
-export default function Popup(props) {
+interface Props {
+  gameResult: {winner: string, score: number, oudlersNb: number};
+  playGame: () => void;
+}
+
+export default function Popup(props: Props) {
   return (
     <div className="popup">
       <div className="popup-content">
