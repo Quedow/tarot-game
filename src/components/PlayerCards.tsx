@@ -5,7 +5,7 @@ interface Props {
     myId: string;
     players: {id: string, pseudo: string}[];
     turnId: string;
-    taker: {id: string, king: number | null };
+    taker: {id: string, king?: number };
 }
 
 export default function PlayerCards(props: Props) {
@@ -20,8 +20,8 @@ export default function PlayerCards(props: Props) {
         <div className="player-container">
             {props.players.map((player: {id: string, pseudo: string}) => <div key={player.id} className='player'>
                 <p>{player.pseudo}</p>
-                {player.id === props.taker.id && props.taker.king ? <img alt='profil' src={cardImages[props.taker.king]} /> : <img alt='profil' src={user} />}
-                {props.turnId === player.id ? (props.turnId === props.myId ? <p>My turn</p> : <p>Playing...</p>) : <p></p>}
+                {player.id === props.taker.id && props.taker.king !== undefined ? <img alt='profil' src={cardImages[props.taker.king]} /> : <img alt='profil' src={user} />}
+                {props.turnId === player.id ? (props.turnId === props.myId ? <p>Mon tour</p> : <p>Joue...</p>) : <p></p>}
             </div>)}
         </div>
     );

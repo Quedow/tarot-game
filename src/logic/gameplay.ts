@@ -8,6 +8,17 @@ interface Play {
     card: number;
 }
 
+interface Fold {
+    cards: number[];
+    pseudos: string[];
+}
+
+interface GameOver {
+    winner: string;
+    oudlersNb: number;
+    score: number;
+}
+
 export default class Gameplay {
     cards: number[];
     chien: number[];
@@ -20,8 +31,9 @@ export default class Gameplay {
         won: number[];
         hasExcuse: boolean;
         score: number;
+        giveOrKeepExcuse: 0 | 0.5 | -0.5;
     };
-    kingCalled: number | null;
+    kingCalled?: number;
     playerNb: number;
     totalTurn: number;
     turnNb: number;
@@ -39,13 +51,14 @@ export default class Gameplay {
 
         this.decks = Array.from({ length: this.playerNb }, () => []);
         this.chien = [];
-        this.kingCalled = null;
+        this.kingCalled = undefined;
         this.game = {
             fold: [],
             takers: [],
             won: [],
             hasExcuse: false,
-            score: 0
+            score: 0,
+            giveOrKeepExcuse: 0,
         };
         
         this.totalTurn = 0
@@ -92,10 +105,10 @@ export default class Gameplay {
         this.nextTurn();
     }
 
-    setTaker(deckIndex: number | null, king: number | null): number {
-        if (deckIndex !== null && king !== null) {
+    setTaker(deckIndex?: number, king?: number): number {
+        if (deckIndex !== undefined && king !== undefined) {
             this.game.takers = [deckIndex];
-            this.kingCalled = this.playerNb === 5 ? king : null;
+            this.kingCalled = this.playerNb === 5 ? king : undefined;
         }
     
         if (this.totalTurn === this.playerNb) {
@@ -107,7 +120,7 @@ export default class Gameplay {
                 takerDeck.push(...this.chien);
                 this.sortDeck(takerDeck);
     
-                if (this.playerNb === 5 && this.kingCalled !== null) {
+                if (this.playerNb === 5 && this.kingCalled !== undefined) {
                     const allyDeck = this.decks.findIndex((deck: number[]) => deck.includes(this.kingCalled!));
                     if (!this.game.takers.includes(allyDeck)) {
                         this.game.takers.push(allyDeck);
@@ -153,9 +166,11 @@ export default class Gameplay {
                         this.game.won.push(...foldCards);
                     } else {
                         this.game.won.push(...foldCards.filter((card: number) => card !== 0));
+                        this.game.giveOrKeepExcuse = 0.5;
                     }
                 } else if (hasExcuse) {
                     this.game.won.push(0);
+                    this.game.giveOrKeepExcuse = -0.5;
                 }
             } else if (takerWin) {
                 this.game.won.push(...foldCards);
@@ -238,10 +253,10 @@ export default class Gameplay {
                 score += 0.5;
             }
         }
-        return score;
+        return score + this.game.giveOrKeepExcuse;
     }
 
-    isGameOver(): {winner: string, oudlersNb: number, score: number} | null {
+    isGameOver(): GameOver | undefined {
         if (!this.decks.find((deck: number[]) => deck.length !== 0)) {
             const oudlersNb = this.game.won.filter((card: number) => [0, 1, 21].includes(card)).length;
             
@@ -253,12 +268,12 @@ export default class Gameplay {
             };
 
             return { 
-                winner: this.game.score >= scoreToWin[oudlersNb] ? "Taker" : "Defender",
+                winner: this.game.score >= scoreToWin[oudlersNb] ? 'Le preneur' : 'La défense',
                 oudlersNb: oudlersNb,
                 score: this.game.score
             };
         }
-        return null;
+        return;
     }
 
     nextTurn(): number {
@@ -282,8 +297,8 @@ export default class Gameplay {
     getChien(): number[] { return this.chien; }
     getFoldWon(): number[] { return this.game.won; }
 
-    getChienAsFold(): {cards: number[], pseudos: string[]} { return { cards: this.chien, pseudos: [] }; }
-    getFold(): {cards: number[], pseudos: string[]} { return { cards: this.game.fold.map((play: Play) => play.card), pseudos: this.game.fold.map((play: Play) => play.player.pseudo) }; }
+    getChienAsFold(): Fold { return { cards: this.chien, pseudos: [] }; }
+    getFold(): Fold { return { cards: this.game.fold.map((play: Play) => play.card), pseudos: this.game.fold.map((play: Play) => play.player.pseudo) }; }
 
     isBaizeFull(): boolean { return this.game.fold.length >= this.playerNb; }
     getScore(): number { return this.game.score; }
@@ -301,13 +316,14 @@ export default class Gameplay {
 
         this.decks = Array.from({ length: this.playerNb }, () => []);
         this.chien = [];
-        this.kingCalled = null;
+        this.kingCalled = undefined;
         this.game = {
             fold: [],
             takers: [],
             won: [],
             hasExcuse: false,
-            score: 0
+            score: 0,
+            giveOrKeepExcuse: 0,
         };
         
         this.totalTurn = 0

@@ -16,14 +16,14 @@ const ENDPOINT = process.env.REACT_APP_ENDPOINT ?? "http://localhost:5000";
 
 export default function Game() {
     const gamePhases: {[key: string]: string} = {
-        "-1": 'Waiting for the dog...',
-        "1": 'Take or pass ?',
-        "2": 'Making your dog...',
-        "3": 'Game start !',
-        "4": 'Game over !'
+        "-1": 'Le joueur fait son chien...',
+        "1": 'Prendre ou passer ?',
+        "2": 'Faites votre chien...',
+        "3": 'La partie est en cours !',
+        "4": 'Partie terminée !'
     };
 
-    const [socket, setSocket] = useState<Socket | null>(null);
+    const [socket, setSocket] = useState<Socket | undefined>();
     const [pseudo, setPseudo] = useState<string>(generatePseudo());
     const [myId, setMyId] = useState<string>('');
     const [players, setPlayers] = useState<{id: string, pseudo: string}[]>([]);
@@ -33,7 +33,7 @@ export default function Game() {
     const [turnId, setTurnId] = useState<string>('');
     const [lastFold, setLastFold] = useState<number[]>([]);
     const [gameResult, setGameResult] = useState<{winner: string, score: number, oudlersNb: number}>({ winner: '', score: 0, oudlersNb: 0 });
-    const [taker, setTaker] = useState<{id: string, king: number | null }>({ id: '', king: null });
+    const [taker, setTaker] = useState<{id: string, king?: number }>({ id: '' });
     const [join, setJoin] = useState(false);
 
     const [playTurnSound] = useSound(turnSound);
@@ -63,9 +63,9 @@ export default function Game() {
         }
     }, [socket]);
 
-    const takeOrPass = useCallback((isTaken: boolean, card: number | null) => {
+    const takeOrPass = useCallback((kingValue?: number) => {
         if (socket && gamePhase === 1 && isMyTurn()) {
-            socket.emit("takeOrPass", { isTaken: isTaken, king: card });
+            socket.emit("takeOrPass", kingValue);
             setGamePhase(-1);
         }
     }, [gamePhase, isMyTurn, socket]);
@@ -104,7 +104,10 @@ export default function Game() {
                 setFold({ cards: [], pseudos: [] });
                 setLastFold([]);
                 setGameResult({ winner: '', score: 0, oudlersNb: 0 });
-                setTaker({ id: '', king: null });
+                setTaker({ id: '' });
+            } 
+            else if (phase === 3) {
+                setFold({ cards: [], pseudos: [] });
             }
         });
         socket.on("setDeck", (deck) => setDeck(deck));

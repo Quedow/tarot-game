@@ -9,11 +9,11 @@ export default function Popup(props: Props) {
   return (
     <div className="popup">
       <div className="popup-content">
-        <h2>{props.gameResult.winner} win</h2>
-        <p>Taker score: <b>{props.gameResult.score}</b></p>
-        <p>Number of oudlers: <b>{props.gameResult.oudlersNb}</b></p>
+        <h2>{props.gameResult.winner} a gagné !</h2>
+        <p>Score preneur : <b>{props.gameResult.score}</b></p>
+        <p>Nombre d'atouts : <b>{props.gameResult.oudlersNb}</b></p>
       </div>
-      <button onClick={props.playGame}>Play again</button>
+      <button onClick={props.playGame}>Rejouer</button>
     </div>
   );
 };

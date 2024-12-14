@@ -25,20 +25,20 @@ export default function Header(props: Props) {
                     <input
                         className='playerInput'
                         type='text'
-                        placeholder='Write your pseudo...'
+                        placeholder='Écris ton pseudo...'
                         onChange={props.updatePseudo} 
                         onKeyDown={joinRequest}
                     ></input>
-                    <button onClick={props.joinRequest}>Join</button>
+                    <button onClick={props.joinRequest}>Rejoindre</button>
                 </>
                 : <>
                     {props.gamePhase === 0 && 
                         <>
-                            <button onClick={props.playGame}>Play/Distribute</button>
+                            <button onClick={props.playGame}>Jouer/Distribuer</button>
                             {/* <button onClick={props.joinGame}>Join current game</button> */}
                         </>
                     }
-                    {props.gamePhase === 3 ? <p>{`${props.gamePhases[props.gamePhase]} (taker score: ${props.score})`}</p> : <p>{props.gamePhases[props.gamePhase]}</p>}
+                    {props.gamePhase === 3 ? <p>{`${props.gamePhases[props.gamePhase]} (Score preneur : ${props.score})`}</p> : <p>{props.gamePhases[props.gamePhase]}</p>}
                 </>
             }    
         </>

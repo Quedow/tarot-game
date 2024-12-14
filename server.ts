@@ -29,7 +29,7 @@ interface Client {
     id: string,
     socket: Socket,
     pseudo: string,
-    deckIndex: number | null
+    deckIndex?: number
 };
 
 const MIN_PLAYERS: number = 3;
@@ -44,7 +44,7 @@ io.on("connection", (socket: Socket) => {
         socket.emit("setJoin", true);
         const pseudo = String(socket.handshake.query.pseudo ?? generatePseudo());
         
-        clients.push({ id: socket.id, socket: socket, pseudo: pseudo, deckIndex: null });
+        clients.push({ id: socket.id, socket: socket, pseudo: pseudo });
         console.log(`New client connected: ${socket.id} (${pseudo})`);
         
         socket.emit("setId", socket.id);
@@ -55,11 +55,11 @@ io.on("connection", (socket: Socket) => {
 
     // socket.on("ping", () => console.log(`Ping from ${socket.id}`)); // Dev ping function
 
-    socket.on("playGame", () => { playGame(socket); });
+    socket.on("playGame", playGame);
 
     // socket.on("joinGame", () => { joinGame(socket); });
 
-    socket.on("takeOrPass", (data: {isTaken: boolean, king: number | null}) => { takeGame(socket, data); });
+    socket.on("takeOrPass", (king?: number) => { takeGame(socket, king ?? undefined); });
 
     socket.on("toChien", (card: number) => { toChien(socket, card); })
 
@@ -80,11 +80,11 @@ io.on("connection", (socket: Socket) => {
 
 const game = new Gameplay(MIN_PLAYERS);
 
-function playGame(socket: Socket) {
+function playGame() {
     if (clients.length >= MIN_PLAYERS && clients.length <= MAX_PLAYERS) {
         isGameStart = true;
         game.reset(clients.length);
-        clients.forEach(client => client.deckIndex = null);
+        clients.forEach(client => client.deckIndex = undefined);
         
         game.start(starter); // Shuffle + distribute cards + initiate currentTurn
         emitDecks(); // Send deck to each players
@@ -94,7 +94,7 @@ function playGame(socket: Socket) {
 }
 
 function emitDecks() {
-    const clientsWithoutDeck = clients.filter(client => client.deckIndex === null);
+    const clientsWithoutDeck = clients.filter(client => client.deckIndex === undefined);
     clientsWithoutDeck.forEach(client => {
         emitDeckToClient(client);
     });
@@ -113,7 +113,7 @@ function emitDeckToClient(client: Client) {
 /* function joinGame(socket) {
     const client = getClientById(socket.id);
 
-    if (client.deckIndex === null) {
+    if (client.deckIndex === undefined) {
         emitDeckToClient(client);
     }
     socket.emit("setFold", game.getFold());
@@ -123,24 +123,28 @@ function emitDeckToClient(client: Client) {
     }
 } */
 
-function takeGame(socket: Socket, data: {isTaken: boolean, king: number | null}) {
+function takeGame(socket: Socket, king?: number) {
     const client = getClientById(socket.id);
-    const deckIndex = data.isTaken && client ? client.deckIndex : null;
-    const newPhase = game.setTaker(deckIndex, data.king);
-
+    const deckIndex = king !== undefined && client ? client.deckIndex : undefined;
+    const newPhase = game.setTaker(deckIndex, king);
+    
     if (newPhase === -1) {
-        playGame(socket);
+        playGame();
     } else if (newPhase === 2) {
         const takerClient = clients.find(client => client.deckIndex === game.getTaker());
         if (takerClient) {
             // io.emit("getChien", { chien: game.getChien(), takerId: client.id });
             io.emit("setFold", game.getChienAsFold());
             takerClient.socket.emit("setChien", game.getDeck(takerClient.deckIndex!));
+            
+            io.emit("setTurnId", takerClient.id);
         }
     }
-
-    if (data.isTaken) { io.emit("setTaker", socket.id, data.king); }
-    emitTurn();
+    
+    if (king !== undefined) { io.emit("setTaker", socket.id, king); }
+    if (newPhase !== 2) {
+        emitTurn();
+    }
 }
 
 function toChien(socket: Socket, card: number) {
@@ -154,6 +158,7 @@ function toChien(socket: Socket, card: number) {
 
     if (isCompleted) {
         io.emit("setPhase", 3);
+        emitTurn();
     }
 }
 
@@ -172,7 +177,7 @@ function playCard(socket: Socket, card: number) {
                 io.emit("setScore", game.getScore());
 
                 const isGameOver = game.isGameOver();
-                if (isGameOver !== null) {
+                if (isGameOver !== undefined) {
                     io.emit("setGameOver", isGameOver);
                     isGameStart = false;
                     starter = (starter + 1) % clients.length;
@@ -189,8 +194,8 @@ function emitTurn() {
     }
 }
 
-function getClientById(id: string): Client | null {
-    return clients.find(client => client.id === id) ?? null;
+function getClientById(id: string): Client | undefined {
+    return clients.find(client => client.id === id) ?? undefined;
 }
 
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
