@@ -1,42 +1,17 @@
-interface Player {
-    pseudo: string;
-    deckIndex: number;
-}
-
-interface Play {
-    player: Player;
-    card: number;
-}
-
-interface Fold {
-    cards: number[];
-    pseudos: string[];
-}
-
-interface GameOver {
-    winner: string;
-    oudlersNb: number;
-    score: number;
-}
+import { Bid, Fold, Game, GameOver, Play, Player } from "../utils/types";
 
 export default class Gameplay {
     cards: number[];
-    chien: number[];
-    chienNb: number;
-    currentTurn: number;
-    decks: number[][];
-    game: {
-        fold: Play[];
-        takers: number[];
-        won: number[];
-        hasExcuse: boolean;
-        score: number;
-        giveOrKeepExcuse: 0 | 0.5 | -0.5;
-    };
-    kingCalled?: number;
     playerNb: number;
-    totalTurn: number;
+    chienNb: number;
     turnNb: number;
+    decks: number[][];
+    chien: number[];
+    game: Game;
+    contract?: number;
+    kingCalled?: number;
+    totalTurn: number;
+    currentTurn: number;
 
     constructor(clientNb: number) {
         this.cards = Array.from({ length: 22 }, (_, i) => i)
@@ -51,7 +26,6 @@ export default class Gameplay {
 
         this.decks = Array.from({ length: this.playerNb }, () => []);
         this.chien = [];
-        this.kingCalled = undefined;
         this.game = {
             fold: [],
             takers: [],
@@ -61,6 +35,8 @@ export default class Gameplay {
             giveOrKeepExcuse: 0,
         };
         
+        this.contract = undefined;
+        this.kingCalled = undefined;
         this.totalTurn = 0
         this.currentTurn = 0;
     }
@@ -105,35 +81,45 @@ export default class Gameplay {
         this.nextTurn();
     }
 
-    setTaker(deckIndex?: number, king?: number): number {
-        if (deckIndex !== undefined && king !== undefined) {
+    setTaker(deckIndex?: number, bid?: Bid): number {
+        if (deckIndex !== undefined && bid !== undefined) {
             this.game.takers = [deckIndex];
-            this.kingCalled = this.playerNb === 5 ? king : undefined;
+            this.contract = bid.contract;
+            this.kingCalled = this.playerNb === 5 ? bid.king : undefined;
         }
     
         if (this.totalTurn === this.playerNb) {
             this.nextTurn();
+    
             if (this.game.takers.length === 0) {
                 return -1; // all players passed
-            } else {
+            }
+    
+            if (this.playerNb === 5 && this.kingCalled !== undefined) {
+                const ally = this.decks.findIndex(deck => deck.includes(this.kingCalled!));
+                if (!this.game.takers.includes(ally)) {
+                    this.game.takers.push(ally);
+                }
+            }
+    
+            this.game.hasExcuse = this.game.takers.some(taker => this.decks[taker].includes(0));
+    
+            if (this.contract === 4) {
+                this.game.won.push(...this.chien);
+                return 3; // call phase 3, no chien needed
+            }
+    
+            if (this.contract !== 6) {
                 const takerDeck = this.decks[this.game.takers[0]];
                 takerDeck.push(...this.chien);
                 this.sortDeck(takerDeck);
-    
-                if (this.playerNb === 5 && this.kingCalled !== undefined) {
-                    const allyDeck = this.decks.findIndex((deck: number[]) => deck.includes(this.kingCalled!));
-                    if (!this.game.takers.includes(allyDeck)) {
-                        this.game.takers.push(allyDeck);
-                    }
-                }
-    
-                this.game.hasExcuse = this.game.takers.some((taker: number) => this.decks[taker].includes(0));
                 return 2; // call phase 2, there is a taker
             }
+            return 3; // call phase 3, no chien needed
         }
         this.nextTurn();
-        return 1; // still in phase 1, all players didn't took or passed
-    }
+        return 1; // still in phase 1, no takers yet
+    }    
 
     toChien(deckIndex: number, card: number): boolean {
         if (![0, 1, 21, 114, 214, 314, 414].includes(card)) {
@@ -270,7 +256,8 @@ export default class Gameplay {
             return { 
                 winner: this.game.score >= scoreToWin[oudlersNb] ? 'Le preneur' : 'La défense',
                 oudlersNb: oudlersNb,
-                score: this.game.score
+                pointsNb: this.game.score,
+                score: this.contract ? (25 + this.game.score - scoreToWin[oudlersNb]) * this.contract : 0,
             };
         }
         return;
@@ -316,7 +303,6 @@ export default class Gameplay {
 
         this.decks = Array.from({ length: this.playerNb }, () => []);
         this.chien = [];
-        this.kingCalled = undefined;
         this.game = {
             fold: [],
             takers: [],
@@ -326,6 +312,8 @@ export default class Gameplay {
             giveOrKeepExcuse: 0,
         };
         
+        this.contract = undefined;
+        this.kingCalled = undefined;
         this.totalTurn = 0
         this.currentTurn = 0;
     }

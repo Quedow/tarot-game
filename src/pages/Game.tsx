@@ -11,6 +11,7 @@ import { generatePseudo } from '../logic/pseudoGenerator';
 import { io, Socket } from "socket.io-client";
 import '../styles/Game.css';
 import turnSound from '../assets/sounds/turnSound.mp3';
+import { Bid, Fold, GameOver, rPlayer, rTaker } from '../utils/types';
 
 const ENDPOINT = process.env.REACT_APP_ENDPOINT ?? "http://localhost:5000";
 
@@ -26,14 +27,14 @@ export default function Game() {
     const [socket, setSocket] = useState<Socket | undefined>();
     const [pseudo, setPseudo] = useState<string>(generatePseudo());
     const [myId, setMyId] = useState<string>('');
-    const [players, setPlayers] = useState<{id: string, pseudo: string}[]>([]);
+    const [players, setPlayers] = useState<rPlayer[]>([]);
     const [gamePhase, setGamePhase] = useState<number>(0);
     const [deck, setDeck] = useState<number[]>([]);
-    const [fold, setFold] = useState<{cards: number[], pseudos: string[]}>({ cards: [], pseudos: [] });
+    const [fold, setFold] = useState<Fold>({ cards: [], pseudos: [] });
     const [turnId, setTurnId] = useState<string>('');
     const [lastFold, setLastFold] = useState<number[]>([]);
-    const [gameResult, setGameResult] = useState<{winner: string, score: number, oudlersNb: number}>({ winner: '', score: 0, oudlersNb: 0 });
-    const [taker, setTaker] = useState<{id: string, king?: number }>({ id: '' });
+    const [gameResult, setGameResult] = useState<GameOver>({ winner: '', oudlersNb: 0, pointsNb: 0, score: 0 });
+    const [taker, setTaker] = useState<rTaker>({ id: '' });
     const [join, setJoin] = useState(false);
 
     const [playTurnSound] = useSound(turnSound);
@@ -63,9 +64,9 @@ export default function Game() {
         }
     }, [socket]);
 
-    const takeOrPass = useCallback((kingValue?: number) => {
+    const takeOrPass = useCallback((bid?: Bid) => {
         if (socket && gamePhase === 1 && isMyTurn()) {
-            socket.emit("takeOrPass", kingValue);
+            socket.emit("takeOrPass", bid);
             setGamePhase(-1);
         }
     }, [gamePhase, isMyTurn, socket]);
@@ -103,7 +104,7 @@ export default function Game() {
             if (phase === 1) {
                 setFold({ cards: [], pseudos: [] });
                 setLastFold([]);
-                setGameResult({ winner: '', score: 0, oudlersNb: 0 });
+                setGameResult({ winner: '', oudlersNb: 0, pointsNb: 0, score: 0 });
                 setTaker({ id: '' });
             } 
             else if (phase === 3) {
@@ -116,8 +117,8 @@ export default function Game() {
             setTurnId(turnId);
             if (turnId === myId) { playTurnSound(); }
         });
-        socket.on("setTaker", (takerId: string, kingCalled: number) => {
-            setTaker({ id: takerId, king: kingCalled});
+        socket.on("setTaker", (takerId: string, bid: Bid) => {
+            setTaker({ id: takerId, ...bid});
         });
         socket.on("setChien", (deck: number[]) => {
             setDeck(deck);
@@ -130,7 +131,7 @@ export default function Game() {
             }
         });
         socket.on("setScore", (score: number) => updateState(setGameResult, { score: score }));
-        socket.on("setGameOver", (data: {winner: string, oudlersNb: number, score: number}) => {
+        socket.on("setGameOver", (data: GameOver) => {
             setGameResult(data);
             setGamePhase(4);
         });
@@ -161,13 +162,13 @@ export default function Game() {
                     playGame={playGame}
                     // joinGame={joinGame}
                 />
-                <TakeOrPassMenu gamePhase={gamePhase} takeOrPass={takeOrPass} />
+                {gamePhase === 1 && <TakeOrPassMenu isMyTurn={turnId === myId} takeOrPass={takeOrPass} currentContract={taker.contract} />}
                 <LastFoldCards fold={lastFold} /> 
             </div>
             <PlayerCard myId={myId} players={players} turnId={turnId} taker={taker} />
             <FoldCards fold={fold.cards} pseudos={fold.pseudos} />            
             <DeckCards deck={deck} playCard={playCard} />
-            {gamePhase === 4 && <Popup gameResult={gameResult} playGame={playGame} />}
+            {gamePhase === 4 && <Popup gameResult={gameResult} contract={taker.contract} playGame={playGame} />}
         </div>
     );
 }

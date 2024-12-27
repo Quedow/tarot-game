@@ -38,7 +38,7 @@ export default function Header(props: Props) {
                             {/* <button onClick={props.joinGame}>Join current game</button> */}
                         </>
                     }
-                    {props.gamePhase === 3 ? <p>{`${props.gamePhases[props.gamePhase]} (Score preneur : ${props.score})`}</p> : <p>{props.gamePhases[props.gamePhase]}</p>}
+                    {props.gamePhase === 3 ? <p>{`${props.gamePhases[props.gamePhase]} (Points preneur : ${props.score})`}</p> : <p>{props.gamePhases[props.gamePhase]}</p>}
                 </>
             }    
         </>

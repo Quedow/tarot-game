@@ -1,0 +1,62 @@
+import { Socket } from "socket.io";
+
+export const contracts: {[key: number]: string} = {
+    1: "Petite",
+    2: "Garde",
+    4: "Garde sans",
+    6: "Garde contre",
+};
+
+export interface Client { 
+    id: string;
+    socket: Socket;
+    pseudo: string;
+    deckIndex?: number;
+};
+
+export interface rTaker {
+    id: string;
+    contract?: number;
+    king?: number;
+}
+
+export interface rPlayer  {
+    id: string;
+    pseudo: string;
+}
+
+export interface Player {
+    pseudo: string;
+    deckIndex: number;
+}
+
+export interface Game {
+    fold: Play[];
+    takers: number[];
+    won: number[];
+    hasExcuse: boolean;
+    score: number;
+    giveOrKeepExcuse: 0 | 0.5 | -0.5;
+};
+
+export interface Bid {
+    contract: number;
+    king: number
+}
+
+export interface Play {
+    player: Player;
+    card: number;
+}
+
+export interface Fold {
+    cards: number[];
+    pseudos: string[];
+}
+
+export interface GameOver {
+    winner: string;
+    oudlersNb: number;
+    pointsNb: number;
+    score: number;
+}

@@ -1,7 +1,9 @@
 import '../styles/Game.css';
+import { contracts, GameOver } from '../utils/types';
 
 interface Props {
-  gameResult: {winner: string, score: number, oudlersNb: number};
+  gameResult: GameOver;
+  contract?: number
   playGame: () => void;
 }
 
@@ -10,8 +12,9 @@ export default function Popup(props: Props) {
     <div className="popup">
       <div className="popup-content">
         <h2>{props.gameResult.winner} a gagné !</h2>
-        <p>Score preneur : <b>{props.gameResult.score}</b></p>
         <p>Nombre d'atouts : <b>{props.gameResult.oudlersNb}</b></p>
+        <p>Points preneur : <b>{props.gameResult.pointsNb}</b></p>
+        {props.contract && <p>Score preneur : <b>{props.gameResult.score} ({contracts[props.contract]})</b></p>}
       </div>
       <button onClick={props.playGame}>Rejouer</button>
     </div>
