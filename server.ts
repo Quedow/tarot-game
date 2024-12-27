@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from "url";
+import { Bid, Client } from "./src/utils/types";
 
 dotenv.config();
 
@@ -24,13 +25,6 @@ app.use(express.static(path.join(__dirname, 'build')));
 app.get('*', (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
-
-interface Client { 
-    id: string,
-    socket: Socket,
-    pseudo: string,
-    deckIndex?: number
-};
 
 const MIN_PLAYERS: number = 3;
 const MAX_PLAYERS: number = 5;
@@ -59,7 +53,7 @@ io.on("connection", (socket: Socket) => {
 
     // socket.on("joinGame", () => { joinGame(socket); });
 
-    socket.on("takeOrPass", (king?: number) => { takeGame(socket, king ?? undefined); });
+    socket.on("takeOrPass", (bid?: Bid) => { takeGame(socket, validateBid(bid)); });
 
     socket.on("toChien", (card: number) => { toChien(socket, card); })
 
@@ -123,25 +117,29 @@ function emitDeckToClient(client: Client) {
     }
 } */
 
-function takeGame(socket: Socket, king?: number) {
+function takeGame(socket: Socket, bid?: Bid) {
     const client = getClientById(socket.id);
-    const deckIndex = king !== undefined && client ? client.deckIndex : undefined;
-    const newPhase = game.setTaker(deckIndex, king);
+    const deckIndex = bid !== undefined && client ? client.deckIndex : undefined;
+    const newPhase = game.setTaker(deckIndex, bid);
     
     if (newPhase === -1) {
+        starter = (starter + 1) % clients.length;
         playGame();
-    } else if (newPhase === 2) {
+        return;
+    }
+
+    if (newPhase === 2) {
         const takerClient = clients.find(client => client.deckIndex === game.getTaker());
         if (takerClient) {
-            // io.emit("getChien", { chien: game.getChien(), takerId: client.id });
             io.emit("setFold", game.getChienAsFold());
             takerClient.socket.emit("setChien", game.getDeck(takerClient.deckIndex!));
-            
             io.emit("setTurnId", takerClient.id);
         }
+    } else if (newPhase === 3) {
+        io.emit("setPhase", 3);
     }
     
-    if (king !== undefined) { io.emit("setTaker", socket.id, king); }
+    if (bid !== undefined) { io.emit("setTaker", socket.id, bid); }
     if (newPhase !== 2) {
         emitTurn();
     }
@@ -197,6 +195,11 @@ function emitTurn() {
 function getClientById(id: string): Client | undefined {
     return clients.find(client => client.id === id) ?? undefined;
 }
+
+function validateBid(bid?: Bid): Bid | undefined {
+    return bid && [1, 2, 4, 6].includes(bid.contract) ? bid : undefined;
+}
+
 
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
 
