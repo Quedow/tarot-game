@@ -14,7 +14,7 @@ export default function Popup(props: Props) {
         <h2>{props.gameResult.winner} a gagné !</h2>
         <p>Nombre d'atouts : <b>{props.gameResult.oudlersNb}</b></p>
         <p>Points preneur : <b>{props.gameResult.pointsNb}</b></p>
-        {props.contract && <p>Score preneur : <b>{props.gameResult.score} ({contracts[props.contract]})</b></p>}
+        {props.contract && <p>Score preneur : <b>{props.gameResult.score}</b> ({contracts[props.contract]})</p>}
       </div>
       <button onClick={props.playGame}>Rejouer</button>
     </div>
