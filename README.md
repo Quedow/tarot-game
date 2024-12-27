@@ -1,11 +1,13 @@
 # Tarot Game Roadmap
 
 In progress:
-- [ ] Possibility to rejoin game if disconnected
 
 To do:
-- [ ] Take small, guard + score system
+- [ ] Possibility to rejoin game if disconnected
 - [ ] Highlight valid cards
+
+27/12/2024 - Update:
+- [X] Take small, guard + score system
 
 14/12/2024 - Update:
 - [X] Game translated in french
