@@ -1,6 +1,6 @@
 # Tarot Game
 
-> January 2024 to now
+> November 2023 to now
 
 ## I. Context
 
@@ -75,11 +75,7 @@ Fixes:
 - [X] Issue if first color is Excuse
 - [X] Excuse issue if fold win but winner don't have excuse
 
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
+## III. Getting Started
 
 In the project directory, you can run:
 
