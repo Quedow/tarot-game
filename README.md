@@ -1,4 +1,17 @@
-# Tarot Game Roadmap
+# Tarot Game
+
+> January 2024 to now
+
+## I. Context
+
+An online tarot game to play with friends remotely.
+
+<p align="center">
+  <img width="720" alt="Tarot In Game" src="./src/assets/images/tarot_in_game.png">
+</p>
+
+
+## II. Roadmap
 
 In progress:
 
