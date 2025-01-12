@@ -6,24 +6,17 @@ import PlayerCard from '../components/PlayerCards';
 import DeckCards from '../components/DeckCards';
 import FoldCards from '../components/FoldCards';
 import LastFoldCards from '../components/LastFoldCards';
+import SoundSelector from "../components/SoundSelector";
 import Popup from '../components/Popup';
 import { generatePseudo } from '../logic/pseudoGenerator';
 import { io, Socket } from "socket.io-client";
 import '../styles/Game.css';
-import turnSound from '../assets/sounds/turnSound.mp3';
-import { Bid, Fold, GameOver, rPlayer, rTaker } from '../utils/types';
+import defaultSound from '../assets/sounds/turnSound.mp3';
+import { Bid, Fold, GameOver, rPlayer, rTaker, gamePhases } from '../utils/types';
 
 const ENDPOINT = process.env.REACT_APP_ENDPOINT ?? "http://localhost:5000";
 
 export default function Game() {
-    const gamePhases: {[key: string]: string} = {
-        "-1": 'Le joueur fait son chien...',
-        "1": 'Prendre ou passer ?',
-        "2": 'Faites votre chien...',
-        "3": 'La partie est en cours !',
-        "4": 'Partie terminée !'
-    };
-
     const [socket, setSocket] = useState<Socket | undefined>();
     const [pseudo, setPseudo] = useState<string>(generatePseudo());
     const [myId, setMyId] = useState<string>('');
@@ -37,7 +30,8 @@ export default function Game() {
     const [taker, setTaker] = useState<rTaker>({ id: '' });
     const [join, setJoin] = useState(false);
 
-    const [playTurnSound] = useSound(turnSound);
+    const [sound, setSound] = useState<string>(defaultSound);
+    const [playTurnSound] = useSound(sound);
 
     const updatePseudo = useCallback((e: any) => {    
         if (!join && e.target.value.length <= 8) {
@@ -54,7 +48,7 @@ export default function Game() {
 
     // const ping = useCallback(() => { socket.emit("ping"); }, [socket]);
     
-    const isMyTurn = useCallback(() => { return turnId === myId; }, [turnId, myId]);
+    const isMyTurn = useCallback(() => { return myId !== '' && turnId === myId; }, [turnId, myId]);
 
     // const joinGame = useCallback(() => { socket.emit("joinGame"); }, [socket]);
     
@@ -153,20 +147,21 @@ export default function Game() {
         <div>
             <div className="menu-container">
                 <Header 
-                    gamePhases={gamePhases}
+                    phaseLabel={gamePhases[gamePhase]}
                     gamePhase={gamePhase}
-                    join={join}
-                    score={gameResult.score}
+                    currentContract={taker.contract}
+                    joined={join}
                     updatePseudo={updatePseudo}
                     joinRequest={joinRequest}
                     playGame={playGame}
                     // joinGame={joinGame}
                 />
-                {gamePhase === 1 && <TakeOrPassMenu isMyTurn={turnId === myId} takeOrPass={takeOrPass} currentContract={taker.contract} />}
-                <LastFoldCards fold={lastFold} /> 
+                {gamePhase === 1 && <TakeOrPassMenu isMyTurn={isMyTurn()} takeOrPass={takeOrPass} currentContract={taker.contract} />}
+                <LastFoldCards fold={lastFold} />
+                <SoundSelector setSound={setSound} />
             </div>
-            <PlayerCard myId={myId} players={players} turnId={turnId} taker={taker} />
-            <FoldCards fold={fold.cards} pseudos={fold.pseudos} />            
+            <PlayerCard myId={myId} players={players} turnId={turnId} taker={taker} isInGame={gamePhase >= 2} />
+            <FoldCards fold={fold.cards} pseudos={fold.pseudos} />
             <DeckCards deck={deck} playCard={playCard} />
             {gamePhase === 4 && <Popup gameResult={gameResult} contract={taker.contract} playGame={playGame} />}
         </div>

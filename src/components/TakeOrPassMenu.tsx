@@ -20,9 +20,9 @@ export default function TakeOrPassMenu(props: Props) {
 
     return (
         <>
-            <button onClick={() => props.takeOrPass()} disabled={!props.isMyTurn}>Passer</button>
             {!contract
                 ? <>
+                    <button onClick={() => props.takeOrPass()} disabled={!props.isMyTurn}>Passer</button>
                     {Object.entries(contracts)
                         .filter(([contract]) => !props.currentContract || Number(contract) > props.currentContract)
                         .map(([contract, label]) => (
@@ -32,7 +32,8 @@ export default function TakeOrPassMenu(props: Props) {
                         ))
                     }
                 </>
-                : <> 
+                : <>
+                    <button onClick={() => setContract(undefined)}>Retour</button>
                     {Object.keys(cardImages).map((card) => (
                         <button key={card} onClick={() => props.takeOrPass({contract: contract, king: Number(card)})}>
                             Appeler

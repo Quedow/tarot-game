@@ -19,6 +19,13 @@ To do:
 - [ ] Possibility to rejoin game if disconnected
 - [ ] Highlight valid cards
 
+12/01/2025 - Update:
+- [X] Choose turn sound
+- [X] Cancel contract
+- [X] Offset last cards after zooming one
+- [X] King called displayed when game start
+- [X] Display contract
+
 27/12/2024 - Update:
 - [X] Take small, guard + score system
 

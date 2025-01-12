@@ -1,10 +1,11 @@
 import '../styles/Game.css';
+import { contracts } from '../utils/types';
 
 interface Props {
-    gamePhases: {[key: number]: string};
     gamePhase: number;
-    join: boolean;
-    score: number;
+    phaseLabel: string;
+    joined: boolean;
+    currentContract?: number;
     joinRequest: () => void;
     updatePseudo: (e: any) => void;
     playGame: () => void;
@@ -20,7 +21,7 @@ export default function Header(props: Props) {
     return (
         <>
             {/* <button onClick={ping}>Ping the Server</button> */}
-            {!props.join
+            {!props.joined
                 ? <>
                     <input
                         className='playerInput'
@@ -38,7 +39,8 @@ export default function Header(props: Props) {
                             {/* <button onClick={props.joinGame}>Join current game</button> */}
                         </>
                     }
-                    {props.gamePhase === 3 ? <p>{`${props.gamePhases[props.gamePhase]} (Points preneur : ${props.score})`}</p> : <p>{props.gamePhases[props.gamePhase]}</p>}
+                    <p>{props.phaseLabel}</p>
+                    {props.gamePhase !== 1 && props.currentContract && <p>(Bataille pour une <b>{contracts[props.currentContract].toLowerCase()}</b>)</p>}
                 </>
             }    
         </>

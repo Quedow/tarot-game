@@ -16,8 +16,8 @@ export default function FoldCards(props: Props) {
 
     return (
         <div className="last-fold-container">
-            {props.fold.map((card: number, index: number) => (
-                <div key={card}  style={style}>
+            {props.fold.map((card: number) => (
+                <div key={card} style={style}>
                     <img alt={String(card)} src={cardImages[card]} />
                 </div>
             ))}

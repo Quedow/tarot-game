@@ -7,6 +7,7 @@ interface Props {
     players: rPlayer[];
     turnId: string;
     taker: rTaker;
+    isInGame: boolean;
 }
 
 export default function PlayerCards(props: Props) {
@@ -16,14 +17,25 @@ export default function PlayerCards(props: Props) {
         314: require(`../assets/images/314.png`),
         414: require(`../assets/images/414.png`),
     };
-    
+
     return (
         <div className="player-container">
-            {props.players.map((player: rPlayer) => <div key={player.id} className='player'>
-                <p>{player.pseudo}</p>
-                {player.id === props.taker.id && props.taker.king !== undefined ? <img alt='profil' src={cardImages[props.taker.king]} /> : <img alt='profil' src={user} />}
-                {props.turnId === player.id ? (props.turnId === props.myId ? <p>Mon tour</p> : <p>Joue...</p>) : <p></p>}
-            </div>)}
+          {props.players.map((player: rPlayer) => {
+            const isTaker = (player.id === props.taker.id);
+            const showColor = (props.isInGame || props.myId === props.taker.id) && isTaker && props.taker.king !== undefined;
+            const isPlayerTurn = props.turnId === player.id;
+    
+            return (
+                <div key={player.id} className="player">
+                    <p>{player.pseudo}</p>
+                    <img
+                        alt="profil"
+                        src={showColor ? cardImages[props.taker.king!] : user}
+                    />
+                    {isPlayerTurn ? (props.turnId === props.myId ? <p>Mon tour</p> : <p>Joue...</p>) : <p></p>}
+                </div>
+            );
+          })}
         </div>
     );
 };

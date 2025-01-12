@@ -1,5 +1,13 @@
 import { Socket } from "socket.io";
 
+export const gamePhases: {[key: string]: string} = {
+    "-1": 'Attendez le tour des autres joueurs...',
+    "1": 'Prendre ou passer ?',
+    "2": 'Faites votre chien...',
+    "3": 'La partie est en cours !',
+    "4": 'Partie terminée !'
+};
+
 export const contracts: {[key: number]: string} = {
     1: "Petite",
     2: "Garde",
