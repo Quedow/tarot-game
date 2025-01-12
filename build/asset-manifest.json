@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.dec8a6bc.css",
-    "main.js": "/static/js/main.f4179d36.js",
+    "main.css": "/static/css/main.9b8c7e1e.css",
+    "main.js": "/static/js/main.d5397082.js",
     "static/js/885.be0e3dec.chunk.js": "/static/js/885.be0e3dec.chunk.js",
     "static/js/453.22d12492.chunk.js": "/static/js/453.22d12492.chunk.js",
     "static/media/211.jpg": "/static/media/211.70202b9be9cfda8bfd01.jpg",
@@ -49,6 +49,7 @@
     "static/media/405.jpg": "/static/media/405.0f8882dc94226f6bde36.jpg",
     "static/media/205.jpg": "/static/media/205.746c7271a5fe8a40136e.jpg",
     "static/media/404.jpg": "/static/media/404.4e15902b99d8bf2ebc35.jpg",
+    "static/media/uwu.mp3": "/static/media/uwu.d3d6dc82e5326b2e1680.mp3",
     "static/media/204.jpg": "/static/media/204.2deca04d618eeea3baee.jpg",
     "static/media/104.jpg": "/static/media/104.a6eb9e758f4780a7537f.jpg",
     "static/media/403.jpg": "/static/media/403.6adc115615a62ae460dc.jpg",
@@ -71,13 +72,13 @@
     "static/media/turnSound.mp3": "/static/media/turnSound.6156ada6f4fcdb1a17bc.mp3",
     "static/media/310.jpg": "/static/media/310.62c070e0705ee873d3b8.jpg",
     "index.html": "/index.html",
-    "main.dec8a6bc.css.map": "/static/css/main.dec8a6bc.css.map",
-    "main.f4179d36.js.map": "/static/js/main.f4179d36.js.map",
+    "main.9b8c7e1e.css.map": "/static/css/main.9b8c7e1e.css.map",
+    "main.d5397082.js.map": "/static/js/main.d5397082.js.map",
     "885.be0e3dec.chunk.js.map": "/static/js/885.be0e3dec.chunk.js.map",
     "453.22d12492.chunk.js.map": "/static/js/453.22d12492.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dec8a6bc.css",
-    "static/js/main.f4179d36.js"
+    "static/css/main.9b8c7e1e.css",
+    "static/js/main.d5397082.js"
   ]
 }
