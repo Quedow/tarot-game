@@ -13,92 +13,75 @@ An online tarot game to play with friends remotely.
 
 ## II. Releases
 
-In progress:
+**In progress**
 
-To do:
-- [ ] Possibility to rejoin game if disconnected
-- [ ] Highlight valid cards
+**To do**
+
+- Possibility to rejoin game if disconnected
+- Highlight valid cards
 
 **2501.1.6.0**
-
-Updates:
-- [X] Choose turn sound
-- [X] Cancel contract
-- [X] Offset last cards after zooming one
-- [X] King called displayed when game start
-- [X] Display contract
+- Choose turn sound
+- Cancel contract
+- Offset last cards after zooming one
+- King called displayed when game start
+- Display contract
 
 **2412.1.5.0**
-
-Updates:
-- [X] Take small, guard + score system
+- Take small, guard + score system
 
 **2412.1.4.0**
-
-Updates:
-- [X] Game translated in french
-- [X] Turn of player making the chien marked
-- [X] At the end of the chien, fold cleared
+- Game translated in french
+- Turn of player making the chien marked
+- At the end of the chien, fold cleared
 
 **2412.1.3.1**
-
-Fixes:
-- [X] Fix excuse calculation in takers score
+- Fix excuse calculation in takers score
 
 **2412.1.3.0**
-
-Updates:
-- [X] Migration to TypeScript
+- Migration to TypeScript
 
 **2411.1.2.0**
-
-Updates:
-- [X] Reset last fold when new game start
-- [X] Card figures with letters
-- [X] Click ENTER to join the game
+- Reset last fold when new game start
+- Card figures with letters
+- Click ENTER to join the game
 
 **2410.1.1.1**
-
-Fixes:
-- [X] Fix excuse consideration in number of oudlers
-- [X] Fix auto-size layers
-- [X] Fix icon size
+- Fix excuse consideration in number of oudlers
+- Fix auto-size layers
+- Fix icon size
 
 **2410.1.1.0**
-
-Updates:
-- [X] Show who takes what
-- [X] Reduce card sizes
-- [X] Show last fold
-- [X] Change beginner after each game
-- [X] Add nicknames
-- [X] 4-player Tarot
-- [X] Real-time points
-- [X] Faster zoom, smaller size
-- [X] Show everyone whose turn it is
-- [X] Implement everyone passes
-- [X] Close gameover menu
-- [X] Know who plays what
-- [X] Show who took
-- [X] Your turn sound
-- [X] Rule can't play at first turn, color taken
+- Show who takes what
+- Reduce card sizes
+- Show last fold
+- Change beginner after each game
+- Add nicknames
+- 4-player Tarot
+- Real-time points
+- Faster zoom, smaller size
+- Show everyone whose turn it is
+- Implement everyone passes
+- Close gameover menu
+- Know who plays what
+- Show who took
+- Your turn sound
+- Rule can't play at first turn, color taken
 
 **2410.1.0.1**
-
-Fixes:
-- [X] Block joiner during a game
-- [X] Excuse not counted (for oudlersNb)
-- [X] "Play" anti-spam
-- [X] Same size cards
-- [X] Heart queen bug (best card bug with wrong color)
-- [X] Point counter issue
-- [X] "Your Turn" issue + Can pass but not your turn
-- [X] Restart game issue
-- [X] Score issue
-- [X] Partner score not take in account
-- [X] Excuse issue if fold lose
-- [X] Issue if first color is Excuse
-- [X] Excuse issue if fold win but winner don't have excuse
+- Block joiner during a game
+- Excuse not counted (for oudlersNb)
+- "Play" anti-spam
+- Same size cards
+- Heart queen bug (best card bug with wrong color)
+- Point counter issue
+- "Your Turn" issue + Can pass but not your turn
+- Restart game issue
+- Score issue
+- Partner score not take in account
+- Excuse issue if fold lose
+- Issue if first color is Excuse
+- Excuse issue if fold win but winner don't have excuse
 
 ## III. Getting Started
 
