@@ -11,7 +11,7 @@ An online tarot game to play with friends remotely.
 </p>
 
 
-## II. Roadmap
+## II. Releases
 
 In progress:
 
@@ -19,37 +19,45 @@ To do:
 - [ ] Possibility to rejoin game if disconnected
 - [ ] Highlight valid cards
 
-12/01/2025 - Update:
+- 2501.1.6.0
+Updates:
 - [X] Choose turn sound
 - [X] Cancel contract
 - [X] Offset last cards after zooming one
 - [X] King called displayed when game start
 - [X] Display contract
 
-27/12/2024 - Update:
+- 2412.1.5.0
+Updates:
 - [X] Take small, guard + score system
 
-14/12/2024 - Update:
+- 2412.1.4.0
+Updates:
 - [X] Game translated in french
 - [X] Turn of player making the chien marked
 - [X] At the end of the chien, fold cleared
 
-14/12/2024 - Fixes:
+- 2412.1.3.1
+Fixes:
 - [X] Fix excuse calculation in takers score
 
-13/12/2024 - Update:
+- 2412.1.3.0
+Updates:
 - [X] Migration to TypeScript
 
-16/11/2024 - Update:
+- 2411.1.2.0
+Updates:
 - [X] Reset last fold when new game start
 - [X] Card figures with letters
 - [X] Click ENTER to join the game
 
-16/11/2024 - Fixes:
+- 2410.1.1.1
+Fixes:
 - [X] Fix excuse consideration in number of oudlers
 - [X] Fix auto-size layers
 - [X] Fix icon size
 
+- 2410.1.1.0
 Updates:
 - [X] Show who takes what
 - [X] Reduce card sizes
@@ -67,6 +75,7 @@ Updates:
 - [X] Your turn sound
 - [X] Rule can't play at first turn, color taken
 
+- 2410.1.0.1
 Fixes:
 - [X] Block joiner during a game
 - [X] Excuse not counted (for oudlersNb)
