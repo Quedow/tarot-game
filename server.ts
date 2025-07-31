@@ -59,16 +59,23 @@ io.on("connection", (socket: Socket) => {
 
     socket.on("playCard", (card: number) => { playCard(socket, card); });
 
-    socket.on("disconnect", () => {
-        const index = clients.findIndex(client => client.id === socket.id);
-        if (index !== -1) { clients.splice(index, 1); }
-        io.emit("setPlayers", clients.map(client => ({ id: client.id, pseudo: client.pseudo })));
+    socket.on("disconnect", () => {        
         console.log("Client disconnected");
+        const index = clients.findIndex(client => client.id === socket.id);
+        // if (index === -1) return;
+        clients[index].id = "";
+        clients[index].socket = undefined!;
+        if (index !== -1 && !isGameStart) {
+            clients.splice(index, 1)
+            io.emit("setPlayers", clients.map(client => ({ id: client.id, pseudo: client.pseudo })));
+        };
         socket.removeAllListeners();
         if (clients.length === 0) {
             isGameStart = false;
-            starter = 0
+            starter = 0;
+            clients.slice(1, clients.length);
         }
+        console.log(clients.map(client => `${client.id} (${client.pseudo})`).join(", "));
     });
 });
 
