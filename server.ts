@@ -9,7 +9,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from "url";
-import { Bid, Client } from "./src/utils/types";
+import { Bid, Client, rGameState } from "./src/utils/types";
 
 dotenv.config();
 
@@ -44,7 +44,28 @@ io.on("connection", (socket: Socket) => {
         socket.emit("setId", socket.id);
         io.emit("setPlayers", clients.map(client => ({ id: client.id, pseudo: client.pseudo })));
     } else {
+        const offlineClient = clients.find(client => client.id === undefined);
+        const ipAddress = socket.handshake.address;
+        console.log(ipAddress);
+        console.log(offlineClient?.socket?.handshake.address);
+        if (offlineClient && offlineClient.socket?.handshake.address === ipAddress) {
+            offlineClient.id = socket.id;
+            socket.emit("setJoin", true);
+            const data: rGameState = {
+                id: socket.id,
+                score: game.getScore(),
+                deck: game.getDeck(offlineClient.deckIndex!),
+                fold: game.getFold(),
+                takerId: "",
+                players: clients.map(client => ({ id: client.id, pseudo: client.pseudo })),
+                turnId: clients.find(client => client.deckIndex === game.getTurn())?.id!,
+                phase: 2,
+            }
+            socket.emit("reco", data)
+            return;
+        }
         socket.emit("setJoin", false);
+        // socket.disconnect(true);
     }
 
     // socket.on("ping", () => console.log(`Ping from ${socket.id}`)); // Dev ping function
@@ -59,23 +80,24 @@ io.on("connection", (socket: Socket) => {
 
     socket.on("playCard", (card: number) => { playCard(socket, card); });
 
-    socket.on("disconnect", () => {        
+    socket.on("disconnect", () => {
         console.log("Client disconnected");
         const index = clients.findIndex(client => client.id === socket.id);
-        // if (index === -1) return;
-        clients[index].id = "";
-        clients[index].socket = undefined!;
-        if (index !== -1 && !isGameStart) {
-            clients.splice(index, 1)
+        if (index !== -1) {
+            if (!isGameStart) {
+                clients.splice(index, 1);
+            } else {
+                clients[index].id = undefined;
+                clients[index].pseudo = "Offline"; // To remove
+            }            
             io.emit("setPlayers", clients.map(client => ({ id: client.id, pseudo: client.pseudo })));
+            socket.removeAllListeners();
         };
-        socket.removeAllListeners();
-        if (clients.length === 0) {
+        if (!clients.some(client => client.id)) {
             isGameStart = false;
             starter = 0;
-            clients.slice(1, clients.length);
+            clients.length = 0;
         }
-        console.log(clients.map(client => `${client.id} (${client.pseudo})`).join(", "));
     });
 });
 
@@ -106,7 +128,7 @@ function emitDeckToClient(client: Client) {
     const deckIndexesUsed = clients.map(client => client.deckIndex);
     const deckIndexAvailable = decks.findIndex((value: number[], index: number) => !deckIndexesUsed.includes(index));
 
-    client.socket.emit("setDeck", decks[deckIndexAvailable]);
+    client.socket?.emit("setDeck", decks[deckIndexAvailable]);
     client.deckIndex = deckIndexAvailable;
     // console.log(`Deck ${deckIndexAvailable} --> ${client.id}`);
 }
@@ -139,7 +161,7 @@ function takeGame(socket: Socket, bid?: Bid) {
         const takerClient = clients.find(client => client.deckIndex === game.getTaker());
         if (takerClient) {
             io.emit("setFold", game.getChienAsFold());
-            takerClient.socket.emit("setChien", game.getDeck(takerClient.deckIndex!));
+            takerClient.socket?.emit("setChien", game.getDeck(takerClient.deckIndex!));
             io.emit("setTurnId", takerClient.id);
         }
     } else if (newPhase === 3) {
@@ -159,7 +181,7 @@ function toChien(socket: Socket, card: number) {
     if (!client) { return; }
 
     const isCompleted = game.toChien(client.deckIndex!, card);
-    client.socket.emit("setDeck", game.getDeck(client.deckIndex!));
+    client.socket?.emit("setDeck", game.getDeck(client.deckIndex!));
 
     if (isCompleted) {
         io.emit("setPhase", 3);

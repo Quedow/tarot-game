@@ -105,7 +105,7 @@ export default function Game() {
                 setFold({ cards: [], pseudos: [] });
             }
         });
-        socket.on("setDeck", (deck) => setDeck(deck));
+        socket.on("setDeck", (deck: number[]) => setDeck(deck));
         // socket.on("setTurnId", setTurnId);
         socket.on("setTurnId", (turnId: string) => {
             setTurnId(turnId);
@@ -118,7 +118,7 @@ export default function Game() {
             setDeck(deck);
             setGamePhase(2);
         });
-        socket.on("setFold", (data: {cards: number[], pseudos: string[]}) => {
+        socket.on("setFold", (data: Fold) => {
             setFold(data);
             if (data.cards.length === players.length) {
                 setLastFold(data.cards);

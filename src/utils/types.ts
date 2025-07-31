@@ -16,8 +16,8 @@ export const contracts: {[key: number]: string} = {
 };
 
 export interface Client { 
-    id: string;
-    socket: Socket;
+    id?: string;
+    socket?: Socket;
     pseudo: string;
     deckIndex?: number;
 };
@@ -29,7 +29,7 @@ export interface rTaker {
 }
 
 export interface rPlayer  {
-    id: string;
+    id?: string;
     pseudo: string;
 }
 
@@ -66,5 +66,17 @@ export interface GameOver {
     winner: string;
     oudlersNb: number;
     pointsNb: number;
+    score: number;
+}
+
+export interface rGameState {
+    id: string;
+    players: rPlayer[];
+    phase: number;
+    deck: number[];
+    turnId: string;
+    takerId: string;
+    bid: Bid;
+    fold: Fold;
     score: number;
 }
