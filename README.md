@@ -17,8 +17,10 @@ An online tarot game to play with friends remotely.
 
 **To do**
 
-- Possibility to rejoin game if disconnected
-- Highlight valid cards
+**2508.1.7.2**
+- Possibility to rejoin game after disconnection
+- Improve UX and displayed information
+- Fix global score calculation
 
 **2501.1.6.0**
 - Choose turn sound
