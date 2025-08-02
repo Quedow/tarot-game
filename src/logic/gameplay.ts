@@ -235,7 +235,7 @@ export default class Gameplay {
     }
 
     isGameOver(): GameOver | undefined {
-        if (this.decks.find((deck: number[]) => deck.length !== 0)) return;
+        if (!this.decks.find((deck: number[]) => deck.length !== 0)) return; // To revert
 
         const oudlersNb = this.game.won.filter((card: number) => [0, 1, 21].includes(card)).length;
         
@@ -243,7 +243,7 @@ export default class Gameplay {
         const rawScore = this.contract ? (25 + Math.abs(this.game.score - scoreToWin[oudlersNb])) * this.contract : 0;
         const score = (takerWins ? 1 : -1) * (this.decks.length - 1) * rawScore;
         return { 
-            winner: takerWins ? 'Le preneur' : 'La défense',
+            winner: takerWins ? "Le preneur" : "La défense",
             oudlersNb,
             pointsNb: this.game.score,
             score,
@@ -268,7 +268,7 @@ export default class Gameplay {
 
     getTurn(): number { return this.currentTurn; }
     getTaker(): number { return this.game.takers[0]; }
-    getContract(): Contract { return { type: this.contract, king: this.kingCalled }; }
+    getContract(): Contract { return { contract: this.contract, king: this.kingCalled }; }
 
     getDeck(playerIndex: number): number[] { return this.decks[playerIndex]; }
     getDecks(): number[][] { return this.decks; }

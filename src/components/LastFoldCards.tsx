@@ -1,4 +1,4 @@
-import '../styles/Game.css';
+import "../styles/Game.css";
 
 interface Props {
     fold: number[];

@@ -1,33 +1,33 @@
-import { useEffect , useState, useCallback } from 'react';
-import useSound from 'use-sound';
-import Header from '../components/Header';
-import TakeOrPassMenu from '../components/TakeOrPassMenu';
-import PlayerCard from '../components/PlayerCards';
-import DeckCards from '../components/DeckCards';
-import FoldCards from '../components/FoldCards';
-import LastFoldCards from '../components/LastFoldCards';
+import { useEffect , useState, useCallback } from "react";
+import useSound from "use-sound";
+import Header from "../components/Header";
+import TakeOrPassMenu from "../components/TakeOrPassMenu";
+import PlayerCard from "../components/PlayerCards";
+import DeckCards from "../components/DeckCards";
+import FoldCards from "../components/FoldCards";
+import LastFoldCards from "../components/LastFoldCards";
 import SoundSelector from "../components/SoundSelector";
-import Popup from '../components/Popup';
-import { generatePseudo } from '../logic/pseudoGenerator';
+import Popup from "../components/Popup";
+import { generatePseudo } from "../logic/pseudoGenerator";
 import { io, Socket } from "socket.io-client";
-import '../styles/Game.css';
-import defaultSound from '../assets/sounds/turnSound.mp3';
-import { rBid, Fold, GameOver, rGameState, rPlayer, rTaker } from '../utils/types';
+import "../styles/Game.css";
+import defaultSound from "../assets/sounds/turnSound.mp3";
+import { rBid, Fold, GameOver, rGameState, rPlayer, rTaker } from "../utils/types";
 
 const ENDPOINT = process.env.REACT_APP_ENDPOINT ?? "http://localhost:5000";
 
 export default function Game() {
     const [socket, setSocket] = useState<Socket | undefined>();
     const [pseudo, setPseudo] = useState<string>(generatePseudo());
-    const [myId, setMyId] = useState<string>('');
+    const [myId, setMyId] = useState<string>("");
     const [players, setPlayers] = useState<rPlayer[]>([]);
     const [gamePhase, setGamePhase] = useState<number>(0);
     const [deck, setDeck] = useState<number[]>([]);
     const [fold, setFold] = useState<Fold>({ cards: [], pseudos: [] });
-    const [turnId, setTurnId] = useState<string>('');
+    const [turnId, setTurnId] = useState<string>("");
     const [lastFold, setLastFold] = useState<number[]>([]);
-    const [gameResult, setGameResult] = useState<GameOver>({ winner: '', oudlersNb: 0, pointsNb: 0, score: 0 });
-    const [taker, setTaker] = useState<rTaker>({ id: '' });
+    const [gameResult, setGameResult] = useState<GameOver>({ winner: "", oudlersNb: 0, pointsNb: 0, score: 0 });
+    const [taker, setTaker] = useState<rTaker>({ id: "" });
     const [join, setJoin] = useState(false);
 
     const [sound, setSound] = useState<string>(defaultSound);
@@ -48,7 +48,7 @@ export default function Game() {
 
     // const ping = useCallback(() => { socket.emit("ping"); }, [socket]);
     
-    const isMyTurn = useCallback(() => { return myId !== '' && turnId === myId; }, [turnId, myId]);
+    const isMyTurn = useCallback(() => { return myId !== "" && turnId === myId; }, [turnId, myId]);
     
     const playGame = useCallback(() => {
         if (socket) {
@@ -72,7 +72,6 @@ export default function Game() {
     };
 
     const joinRequest = () => {
-        // setPseudo(input);
         const newSocket = io(ENDPOINT, { 
             autoConnect: true,
             query: { pseudo: pseudo }
@@ -105,8 +104,8 @@ export default function Game() {
             if (phase === 1) {
                 setFold({ cards: [], pseudos: [] });
                 setLastFold([]);
-                setGameResult({ winner: '', oudlersNb: 0, pointsNb: 0, score: 0 });
-                setTaker({ id: '' });
+                setGameResult({ winner: "", oudlersNb: 0, pointsNb: 0, score: 0 });
+                setTaker({ id: "" });
             } 
             else if (phase === 3) {
                 setFold({ cards: [], pseudos: [] });
@@ -137,6 +136,7 @@ export default function Game() {
         socket.on("connect_error", (error: Error) => {
             setJoin(false);
             socket.disconnect();
+            console.error(error.message);
             alert(error.message);
         });
         return () => {

@@ -1,6 +1,6 @@
-import '../styles/Game.css';
-import { contracts } from '../utils/constants';
-import { gamePhases } from '../utils/types';
+import "../styles/Game.css";
+import { contracts } from "../utils/constants";
+import { gamePhases } from "../utils/types";
 
 interface Props {
     gamePhase: number;
@@ -14,7 +14,7 @@ interface Props {
 
 export default function Header(props: Props) {
     const joinRequest = (e: any) => {
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
             props.joinRequest();
         }
     };
@@ -42,9 +42,9 @@ export default function Header(props: Props) {
             {!props.joined
                 ? <>
                     <input
-                        className='playerInput'
-                        type='text'
-                        placeholder='Écris ton pseudo...'
+                        className="playerInput"
+                        type="text"
+                        placeholder="Écris ton pseudo..."
                         onChange={props.updatePseudo} 
                         onKeyDown={joinRequest}
                     ></input>

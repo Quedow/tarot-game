@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import '../styles/Game.css';
-import { rBid } from '../utils/types';
-import { contracts } from '../utils/constants';
+import { useState } from "react";
+import "../styles/Game.css";
+import { rBid } from "../utils/types";
+import { contracts } from "../utils/constants";
 
 interface Props {
     isMyTurn: boolean;
@@ -13,10 +13,10 @@ export default function TakeOrPassMenu(props: Props) {
     const [contract, setContract] = useState<number | undefined>();
 
     const cardImages: {[key: number]: string} = {
-        114: require('../assets/images/114.png'),
-        214: require('../assets/images/214.png'),
-        314: require('../assets/images/314.png'),
-        414: require('../assets/images/414.png'),
+        114: require("../assets/images/114.png"),
+        214: require("../assets/images/214.png"),
+        314: require("../assets/images/314.png"),
+        414: require("../assets/images/414.png"),
     };
 
     return (

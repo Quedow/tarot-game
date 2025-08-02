@@ -1,5 +1,5 @@
-import Game from './pages/Game';
-import './App.css';
+import Game from "./pages/Game";
+import "./App.css";
 
 function App() {
   return (

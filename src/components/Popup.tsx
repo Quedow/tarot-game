@@ -1,6 +1,6 @@
-import '../styles/Game.css';
-import { contracts } from '../utils/constants';
-import { GameOver } from '../utils/types';
+import "../styles/Game.css";
+import { contracts } from "../utils/constants";
+import { GameOver } from "../utils/types";
 
 interface Props {
   gameResult: GameOver;
@@ -15,7 +15,7 @@ export default function Popup(props: Props) {
         <h2>{props.gameResult.winner} a gagné !</h2>
         <p>Nombre de bouts : <b>{props.gameResult.oudlersNb}</b></p>
         <p>Points preneur : <b>{props.gameResult.pointsNb}</b></p>
-        {props.contract && <p>Score preneur : <b>{props.gameResult.score}</b> ({contracts[props.contract]})</p>}
+        <p>Score preneur : <b>{props.gameResult.score}</b> ({props.contract && contracts[props.contract]})</p>
       </div>
       <button onClick={props.playGame}>Rejouer</button>
     </div>

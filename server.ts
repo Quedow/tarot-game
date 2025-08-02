@@ -182,7 +182,7 @@ function toChien(socket: Socket, card: number) {
     // console.log(`Card ${card} --> chien`);
     
     const client = getClientById(socket.id);
-    if (!client) { return; } // To fix
+    if (!client || client.deckIndex !== game.getTurn()) return;
 
     const isCompleted = game.toChien(client.deckIndex!, card);
     client.socket.emit("setDeck", game.getDeck(client.deckIndex!));
