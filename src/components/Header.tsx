@@ -13,6 +13,9 @@ interface Props {
 }
 
 export default function Header(props: Props) {
+    const inMainMenu = !props.joined && props.gamePhase === 0;
+    const inLobby = props.gamePhase === 0;
+
     const joinRequest = (e: any) => {
         if (e.key === "Enter") {
             props.joinRequest();
@@ -39,7 +42,7 @@ export default function Header(props: Props) {
     return (
         <>
             {/* <button onClick={ping}>Ping the Server</button> */}
-            {!props.joined
+            {inMainMenu
                 ? <>
                     <input
                         className="playerInput"
@@ -51,12 +54,7 @@ export default function Header(props: Props) {
                     <button onClick={props.joinRequest}>Rejoindre</button>
                 </>
                 : <>
-                    {props.gamePhase === 0 && 
-                        <>
-                            <button onClick={props.playGame}>Jouer/Distribuer</button>
-                            {/* <button onClick={props.joinGame}>Join current game</button> */}
-                        </>
-                    }
+                    {inLobby && <button onClick={props.playGame}>Jouer/Distribuer</button>}
                     <p>{phaseLabel(props.gamePhase, props.isMyTurn)}</p>
                     {props.currentContract && <p>(Bataille pour une <b>{contracts[props.currentContract].toLowerCase()}</b>)</p>}
                 </>

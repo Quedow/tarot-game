@@ -96,30 +96,6 @@ io.on("connection", (socket: Socket) => {
 
 const game = new Gameplay(MIN_PLAYERS);
 
-function tryRejoin(socket: Socket): boolean {
-    const offlineClient = clients.find(client => client.socket.disconnected);
-    const ipAddress = socket.handshake.address;
-    
-    if (!offlineClient || offlineClient.socket.handshake.address !== ipAddress) return false;
-
-    offlineClient.id = socket.id;
-    offlineClient.socket = socket;
-    const data: rGameState = {
-        id: socket.id,
-        pseudo: offlineClient.pseudo,
-        deck: game.getDeck(offlineClient.deckIndex!),
-        fold: game.getPhase() !== 2 ? game.getFold() : game.getChienAsFold(),
-        phase: game.getPhase(),
-        turnId: getClientIdTurn(),
-        score: game.getScore(),
-    };
-    socket.emit("setRejoin", data);
-    io.emit("setPlayers", getPlayers());
-    io.emit("setTaker", getTakerClient()?.id, game.getContract());
-    emitTurn();
-    return true;
-}
-
 function playGame() {
     if (clients.length >= MIN_PLAYERS && clients.length <= MAX_PLAYERS) {
         isGameStart = true;
@@ -224,6 +200,30 @@ function emitTurn() {
     if (clientId) {
         io.emit("setTurnId", clientId);
     }
+}
+
+function tryRejoin(socket: Socket): boolean {
+    const offlineClient = clients.find(client => client.socket.disconnected);
+    const ipAddress = socket.handshake.address;
+    
+    if (!offlineClient || offlineClient.socket.handshake.address !== ipAddress) return false;
+
+    offlineClient.id = socket.id;
+    offlineClient.socket = socket;
+    const data: rGameState = {
+        id: socket.id,
+        pseudo: offlineClient.pseudo,
+        deck: game.getDeck(offlineClient.deckIndex!),
+        fold: game.getPhase() !== 2 ? game.getFold() : game.getChienAsFold(),
+        phase: game.getPhase(),
+        turnId: getClientIdTurn(),
+        score: game.getScore(),
+    };
+    socket.emit("setRejoin", data);
+    io.emit("setPlayers", getPlayers());
+    io.emit("setTaker", getTakerClient()?.id, game.getContract());
+    emitTurn();
+    return true;
 }
 
 function getClientById(id: string): Client | undefined {
