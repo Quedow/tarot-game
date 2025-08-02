@@ -1,5 +1,6 @@
 import '../styles/Game.css';
-import { contracts, GameOver } from '../utils/types';
+import { contracts } from '../utils/constants';
+import { GameOver } from '../utils/types';
 
 interface Props {
   gameResult: GameOver;

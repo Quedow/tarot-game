@@ -9,7 +9,8 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from "url";
-import { Bid, Client, rGameState } from "./src/utils/types";
+import { rBid, Client, rGameState } from "./src/utils/types";
+import { contracts } from "./src/utils/constants";
 
 dotenv.config();
 
@@ -33,48 +34,40 @@ const clients: Client[] = [];
 let isGameStart: boolean = false;
 let starter: number = 0;
 
+io.use((socket, next) => {
+    const canJoin = !isGameStart && clients.length < MAX_PLAYERS;
+    const ip = socket.handshake.address;
+  
+    const canReJoin = clients.some(client => client.socket.disconnected && client.socket.handshake.address === ip);
+  
+    if (canJoin || canReJoin) {
+        return next();
+    }
+    return next(new Error("Impossible de rejoindre la partie: partie en cours ou aucune place disponible."));
+});  
+  
+
 io.on("connection", (socket: Socket) => {
     if (!isGameStart && clients.length < MAX_PLAYERS) {
-        socket.emit("setJoin", true);
         const pseudo = String(socket.handshake.query.pseudo ?? generatePseudo());
         
         clients.push({ id: socket.id, socket: socket, pseudo: pseudo });
         console.log(`New client connected: ${socket.id} (${pseudo})`);
         
         socket.emit("setId", socket.id);
-        io.emit("setPlayers", clients.map(client => ({ id: client.id, pseudo: client.pseudo })));
+        io.emit("setPlayers", getPlayers());
     } else {
-        const offlineClient = clients.find(client => client.id === undefined);
-        const ipAddress = socket.handshake.address;
-        console.log(ipAddress);
-        console.log(offlineClient?.socket?.handshake.address);
-        if (offlineClient && offlineClient.socket?.handshake.address === ipAddress) {
-            offlineClient.id = socket.id;
-            socket.emit("setJoin", true);
-            const data: rGameState = {
-                id: socket.id,
-                score: game.getScore(),
-                deck: game.getDeck(offlineClient.deckIndex!),
-                fold: game.getFold(),
-                takerId: "",
-                players: clients.map(client => ({ id: client.id, pseudo: client.pseudo })),
-                turnId: clients.find(client => client.deckIndex === game.getTurn())?.id!,
-                phase: 2,
-            }
-            socket.emit("reco", data)
-            return;
+        const success = tryRejoin(socket);
+        if (!success) {
+            socket.disconnect(true);
         }
-        socket.emit("setJoin", false);
-        // socket.disconnect(true);
     }
 
     // socket.on("ping", () => console.log(`Ping from ${socket.id}`)); // Dev ping function
 
     socket.on("playGame", playGame);
 
-    // socket.on("joinGame", () => { joinGame(socket); });
-
-    socket.on("takeOrPass", (bid?: Bid) => { takeGame(socket, validateBid(bid)); });
+    socket.on("takeOrPass", (bid?: rBid) => { takeGame(socket, validateBid(bid)); });
 
     socket.on("toChien", (card: number) => { toChien(socket, card); })
 
@@ -86,12 +79,8 @@ io.on("connection", (socket: Socket) => {
         if (index !== -1) {
             if (!isGameStart) {
                 clients.splice(index, 1);
-            } else {
-                clients[index].id = undefined;
-                clients[index].pseudo = "Offline"; // To remove
-            }            
-            io.emit("setPlayers", clients.map(client => ({ id: client.id, pseudo: client.pseudo })));
-            socket.removeAllListeners();
+                io.emit("setPlayers", getPlayers());
+            }
         };
         if (!clients.some(client => client.id)) {
             isGameStart = false;
@@ -99,9 +88,37 @@ io.on("connection", (socket: Socket) => {
             clients.length = 0;
         }
     });
+
+    socket.on("connect_error", (err) => {
+        console.error("Connection rejected:", err.message);
+    });
 });
 
 const game = new Gameplay(MIN_PLAYERS);
+
+function tryRejoin(socket: Socket): boolean {
+    const offlineClient = clients.find(client => client.socket.disconnected);
+    const ipAddress = socket.handshake.address;
+    
+    if (!offlineClient || offlineClient.socket.handshake.address !== ipAddress) return false;
+
+    offlineClient.id = socket.id;
+    offlineClient.socket = socket;
+    const data: rGameState = {
+        id: socket.id,
+        pseudo: offlineClient.pseudo,
+        deck: game.getDeck(offlineClient.deckIndex!),
+        fold: game.getPhase() !== 2 ? game.getFold() : game.getChienAsFold(),
+        phase: game.getPhase(),
+        turnId: getClientIdTurn(),
+        score: game.getScore(),
+    };
+    socket.emit("setRejoin", data);
+    io.emit("setPlayers", getPlayers());
+    io.emit("setTaker", getTakerClient()?.id, game.getContract());
+    emitTurn();
+    return true;
+}
 
 function playGame() {
     if (clients.length >= MIN_PLAYERS && clients.length <= MAX_PLAYERS) {
@@ -111,7 +128,7 @@ function playGame() {
         
         game.start(starter); // Shuffle + distribute cards + initiate currentTurn
         emitDecks(); // Send deck to each players
-        io.emit("setPhase", 1);
+        io.emit("setPhase", game.getPhase(1));
         emitTurn();
     }
 }
@@ -128,25 +145,12 @@ function emitDeckToClient(client: Client) {
     const deckIndexesUsed = clients.map(client => client.deckIndex);
     const deckIndexAvailable = decks.findIndex((value: number[], index: number) => !deckIndexesUsed.includes(index));
 
-    client.socket?.emit("setDeck", decks[deckIndexAvailable]);
+    client.socket.emit("setDeck", decks[deckIndexAvailable]);
     client.deckIndex = deckIndexAvailable;
     // console.log(`Deck ${deckIndexAvailable} --> ${client.id}`);
 }
 
-/* function joinGame(socket) {
-    const client = getClientById(socket.id);
-
-    if (client.deckIndex === undefined) {
-        emitDeckToClient(client);
-    }
-    socket.emit("setFold", game.getFold());
-    socket.emit("setPhase", 3);
-    if (client.deckIndex === game.getTurn()) {
-        socket.emit("setTurnId", client.id);
-    }
-} */
-
-function takeGame(socket: Socket, bid?: Bid) {
+function takeGame(socket: Socket, bid?: rBid) {
     const client = getClientById(socket.id);
     const deckIndex = bid !== undefined && client ? client.deckIndex : undefined;
     const newPhase = game.setTaker(deckIndex, bid);
@@ -157,18 +161,18 @@ function takeGame(socket: Socket, bid?: Bid) {
         return;
     }
 
+    if (newPhase === 2 || newPhase === 3) io.emit("setPhase", game.getPhase(newPhase));
+
     if (newPhase === 2) {
-        const takerClient = clients.find(client => client.deckIndex === game.getTaker());
+        const takerClient = getTakerClient();
         if (takerClient) {
             io.emit("setFold", game.getChienAsFold());
-            takerClient.socket?.emit("setChien", game.getDeck(takerClient.deckIndex!));
+            takerClient.socket.emit("setChien", game.getDeck(takerClient.deckIndex!));
             io.emit("setTurnId", takerClient.id);
         }
-    } else if (newPhase === 3) {
-        io.emit("setPhase", 3);
     }
     
-    if (bid !== undefined) { io.emit("setTaker", socket.id, bid); }
+    if (bid !== undefined) { io.emit("setTaker", socket.id, game.getContract()); }
     if (newPhase !== 2) {
         emitTurn();
     }
@@ -178,20 +182,21 @@ function toChien(socket: Socket, card: number) {
     // console.log(`Card ${card} --> chien`);
     
     const client = getClientById(socket.id);
-    if (!client) { return; }
+    if (!client) { return; } // To fix
 
     const isCompleted = game.toChien(client.deckIndex!, card);
-    client.socket?.emit("setDeck", game.getDeck(client.deckIndex!));
+    client.socket.emit("setDeck", game.getDeck(client.deckIndex!));
 
     if (isCompleted) {
-        io.emit("setPhase", 3);
+        game.setTurn(starter);
+        io.emit("setPhase", game.getPhase(3));
         emitTurn();
     }
 }
 
 function playCard(socket: Socket, card: number) {
     // console.log(`Card ${card} --> baize`);
-    
+
     const client = getClientById(socket.id);
     if (client && client.deckIndex === game.getTurn()) {
         const validCard = game.checkPlay({ pseudo: client.pseudo, deckIndex: client.deckIndex }, card);
@@ -205,7 +210,7 @@ function playCard(socket: Socket, card: number) {
 
                 const isGameOver = game.isGameOver();
                 if (isGameOver !== undefined) {
-                    io.emit("setGameOver", isGameOver);
+                    io.emit("setGameOver", isGameOver, game.getPhase(4));
                     isGameStart = false;
                     starter = (starter + 1) % clients.length;
                 }
@@ -215,9 +220,9 @@ function playCard(socket: Socket, card: number) {
 }
 
 function emitTurn() {
-    const client = clients.find(client => client.deckIndex === game.getTurn());
-    if (client) {
-        io.emit("setTurnId", client.id);
+    const clientId = getClientIdTurn();
+    if (clientId) {
+        io.emit("setTurnId", clientId);
     }
 }
 
@@ -225,10 +230,23 @@ function getClientById(id: string): Client | undefined {
     return clients.find(client => client.id === id) ?? undefined;
 }
 
-function validateBid(bid?: Bid): Bid | undefined {
-    return bid && [1, 2, 4, 6].includes(bid.contract) ? bid : undefined;
+function getPlayers() {
+    return clients.map(client => ({ id: client.id, pseudo: client.pseudo }));
 }
 
+function getClientIdTurn(): string {
+    const client = clients.find(client => client.deckIndex === game.getTurn());
+    if (!client) throw Error("It is not the turn of any player");
+    return client?.id;
+}
+
+function getTakerClient(): Client | undefined {
+    return clients.find(client => client.deckIndex === game.getTaker());
+}
+
+function validateBid(bid?: rBid): rBid | undefined {
+    return bid && Object.keys(contracts).map(Number).includes(bid.contract) ? bid : undefined;
+}
 
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
 

@@ -1,9 +1,10 @@
 import '../styles/Game.css';
-import { contracts } from '../utils/types';
+import { contracts } from '../utils/constants';
+import { gamePhases } from '../utils/types';
 
 interface Props {
     gamePhase: number;
-    phaseLabel: string;
+    isMyTurn: boolean;
     joined: boolean;
     currentContract?: number;
     joinRequest: () => void;
@@ -17,6 +18,23 @@ export default function Header(props: Props) {
             props.joinRequest();
         }
     };
+
+    const phaseLabel = (phase: number, isMyTurn: boolean) => {
+        switch (phase) {
+            case -1:
+                return gamePhases.WAITING;
+            case 1:
+                return isMyTurn ? gamePhases.TAKE_OR_PASS : gamePhases.WAITING;
+            case 2:
+                return isMyTurn ? gamePhases.PRE_GAME : gamePhases.WAITING; 
+            case 3:
+                return gamePhases.IN_GAME;
+            case 4:
+                return gamePhases.END_GAME;
+            default:
+                break;
+        }
+    }
 
     return (
         <>
@@ -39,8 +57,8 @@ export default function Header(props: Props) {
                             {/* <button onClick={props.joinGame}>Join current game</button> */}
                         </>
                     }
-                    <p>{props.phaseLabel}</p>
-                    {props.gamePhase !== 1 && props.currentContract && <p>(Bataille pour une <b>{contracts[props.currentContract].toLowerCase()}</b>)</p>}
+                    <p>{phaseLabel(props.gamePhase, props.isMyTurn)}</p>
+                    {props.currentContract && <p>(Bataille pour une <b>{contracts[props.currentContract].toLowerCase()}</b>)</p>}
                 </>
             }    
         </>

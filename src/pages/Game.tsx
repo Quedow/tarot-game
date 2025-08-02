@@ -12,7 +12,7 @@ import { generatePseudo } from '../logic/pseudoGenerator';
 import { io, Socket } from "socket.io-client";
 import '../styles/Game.css';
 import defaultSound from '../assets/sounds/turnSound.mp3';
-import { Bid, Fold, GameOver, rPlayer, rTaker, gamePhases } from '../utils/types';
+import { rBid, Fold, GameOver, rGameState, rPlayer, rTaker } from '../utils/types';
 
 const ENDPOINT = process.env.REACT_APP_ENDPOINT ?? "http://localhost:5000";
 
@@ -33,11 +33,11 @@ export default function Game() {
     const [sound, setSound] = useState<string>(defaultSound);
     const [playTurnSound] = useSound(sound);
 
-    const updatePseudo = useCallback((e: any) => {    
-        if (!join && e.target.value.length <= 8) {
+    const updatePseudo = (e: any) => {    
+        if (e.target.value.length <= 8) {
             setPseudo(e.target.value);
         }
-    }, [join]);
+    };
 
     const updateState = useCallback((stateFunction: any, updates: any) => {
         stateFunction((prevState: any) => ({
@@ -49,8 +49,6 @@ export default function Game() {
     // const ping = useCallback(() => { socket.emit("ping"); }, [socket]);
     
     const isMyTurn = useCallback(() => { return myId !== '' && turnId === myId; }, [turnId, myId]);
-
-    // const joinGame = useCallback(() => { socket.emit("joinGame"); }, [socket]);
     
     const playGame = useCallback(() => {
         if (socket) {
@@ -58,15 +56,15 @@ export default function Game() {
         }
     }, [socket]);
 
-    const takeOrPass = useCallback((bid?: Bid) => {
+    const takeOrPass = useCallback((bid?: rBid) => {
         if (socket && gamePhase === 1 && isMyTurn()) {
             socket.emit("takeOrPass", bid);
-            setGamePhase(-1);
         }
     }, [gamePhase, isMyTurn, socket]);
 
     const playCard = (cardValue: number) => {
-        if (socket && gamePhase === 3 && isMyTurn()) {
+        if (!isMyTurn()) return;
+        if (socket && gamePhase === 3) {
             socket.emit("playCard", cardValue);
         } else if (socket && gamePhase === 2) {
             socket.emit("toChien", cardValue);
@@ -74,6 +72,7 @@ export default function Game() {
     };
 
     const joinRequest = () => {
+        // setPseudo(input);
         const newSocket = io(ENDPOINT, { 
             autoConnect: true,
             query: { pseudo: pseudo }
@@ -85,13 +84,21 @@ export default function Game() {
 
     useEffect(() => {
         if (!socket) return;
-        socket.on("setJoin", (join: boolean) => {
-            setJoin(join);
-            if (!join) {
-                socket.disconnect();
-            }
+        socket.on("setRejoin", (data: rGameState) => {
+            setMyId(data.id);
+            setPseudo(data.pseudo);
+            updateState(setGameResult, { score: data.score });
+            setDeck(data.deck);
+            setFold(data.fold);
+            setTurnId(data.turnId);
+            setGamePhase(data.phase);
+            setJoin(true);
         });
-        socket.on("setId", setMyId); // <=> socket.on("getId", (id) => { setId(id); });
+
+        socket.on("setId", (id: string) => {
+            setMyId(id);
+            setJoin(true);
+        });
         socket.on("setPlayers", setPlayers);
         socket.on("setPhase", (phase: number) => {
             setGamePhase(phase);
@@ -106,17 +113,15 @@ export default function Game() {
             }
         });
         socket.on("setDeck", (deck: number[]) => setDeck(deck));
-        // socket.on("setTurnId", setTurnId);
         socket.on("setTurnId", (turnId: string) => {
             setTurnId(turnId);
             if (turnId === myId) { playTurnSound(); }
         });
-        socket.on("setTaker", (takerId: string, bid: Bid) => {
+        socket.on("setTaker", (takerId: string, bid: rBid) => {
             setTaker({ id: takerId, ...bid});
         });
         socket.on("setChien", (deck: number[]) => {
             setDeck(deck);
-            setGamePhase(2);
         });
         socket.on("setFold", (data: Fold) => {
             setFold(data);
@@ -125,11 +130,17 @@ export default function Game() {
             }
         });
         socket.on("setScore", (score: number) => updateState(setGameResult, { score: score }));
-        socket.on("setGameOver", (data: GameOver) => {
+        socket.on("setGameOver", (data: GameOver, phase: number) => {
             setGameResult(data);
-            setGamePhase(4);
+            setGamePhase(phase);
+        });
+        socket.on("connect_error", (error: Error) => {
+            setJoin(false);
+            socket.disconnect();
+            alert(error.message);
         });
         return () => {
+            socket.off("setRejoin");
             socket.off("setId");
             socket.off("setPlayers");
             socket.off("setPhase");
@@ -140,6 +151,7 @@ export default function Game() {
             socket.off("setFold");
             socket.off("setScore");
             socket.off("setGameOver");
+            socket.off("connect_error");
         };
     }, [socket, myId, updateState, playTurnSound, players.length]);    
 
@@ -147,14 +159,13 @@ export default function Game() {
         <div>
             <div className="menu-container">
                 <Header 
-                    phaseLabel={gamePhases[gamePhase]}
                     gamePhase={gamePhase}
+                    isMyTurn={isMyTurn()}
                     currentContract={taker.contract}
                     joined={join}
                     updatePseudo={updatePseudo}
                     joinRequest={joinRequest}
                     playGame={playGame}
-                    // joinGame={joinGame}
                 />
                 {gamePhase === 1 && <TakeOrPassMenu isMyTurn={isMyTurn()} takeOrPass={takeOrPass} currentContract={taker.contract} />}
                 <LastFoldCards fold={lastFold} />

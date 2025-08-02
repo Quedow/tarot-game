@@ -1,4 +1,5 @@
-import { Bid, Fold, Game, GameOver, Play, Player } from "../utils/types";
+import { cardPoints, scoreToWin } from "../utils/constants";
+import { rBid, Fold, Game, GameOver, Play, Player, Contract } from "../utils/types";
 
 export default class Gameplay {
     cards: number[];
@@ -27,6 +28,7 @@ export default class Gameplay {
         this.decks = Array.from({ length: this.playerNb }, () => []);
         this.chien = [];
         this.game = {
+            phase: 0,
             fold: [],
             takers: [],
             won: [],
@@ -81,45 +83,43 @@ export default class Gameplay {
         this.nextTurn();
     }
 
-    setTaker(deckIndex?: number, bid?: Bid): number {
+    setTaker(deckIndex?: number, bid?: rBid): number {
         if (deckIndex !== undefined && bid !== undefined) {
             this.game.takers = [deckIndex];
             this.contract = bid.contract;
             this.kingCalled = this.playerNb === 5 ? bid.king : undefined;
         }
-    
-        if (this.totalTurn === this.playerNb) {
+
+        if (this.totalTurn < this.playerNb) {
             this.nextTurn();
-    
-            if (this.game.takers.length === 0) {
-                return -1; // all players passed
+            return 1; // still in phase 1, no takers yet
+        }
+
+        if (this.game.takers.length === 0) return -1; // all players passed
+
+        if (this.playerNb === 5 && this.kingCalled !== undefined) {
+            const ally = this.decks.findIndex(deck => deck.includes(this.kingCalled!));
+            if (!this.game.takers.includes(ally)) {
+                this.game.takers.push(ally);
             }
-    
-            if (this.playerNb === 5 && this.kingCalled !== undefined) {
-                const ally = this.decks.findIndex(deck => deck.includes(this.kingCalled!));
-                if (!this.game.takers.includes(ally)) {
-                    this.game.takers.push(ally);
-                }
-            }
-    
-            this.game.hasExcuse = this.game.takers.some(taker => this.decks[taker].includes(0));
-    
+        }
+
+        this.game.hasExcuse = this.game.takers.some(taker => this.decks[taker].includes(0));
+
+        if (this.contract === 4 || this.contract === 6) {
             if (this.contract === 4) {
                 this.game.won.push(...this.chien);
-                return 3; // call phase 3, no chien needed
             }
-    
-            if (this.contract !== 6) {
-                const takerDeck = this.decks[this.game.takers[0]];
-                takerDeck.push(...this.chien);
-                this.sortDeck(takerDeck);
-                return 2; // call phase 2, there is a taker
-            }
+            this.nextTurn();
             return 3; // call phase 3, no chien needed
         }
-        this.nextTurn();
-        return 1; // still in phase 1, no takers yet
-    }    
+
+        const takerDeck = this.decks[this.game.takers[0]];
+        takerDeck.push(...this.chien);
+        this.sortDeck(takerDeck);
+        this.currentTurn = this.game.takers[0];
+        return 2; // call phase 2, there is a taker
+    }
 
     toChien(deckIndex: number, card: number): boolean {
         if (![0, 1, 21, 114, 214, 314, 414].includes(card)) {
@@ -223,18 +223,10 @@ export default class Gameplay {
     }
 
     calculateScore(wonFolds: number[]): number {
-        const points: {[key: number]: number} = {
-            0: 4.5, 1: 4.5, 21: 4.5,
-            111: 1.5, 211: 1.5, 311: 1.5, 411: 1.5,
-            112: 2.5, 212: 2.5, 312: 2.5, 412: 2.5,
-            113: 3.5, 213: 3.5, 313: 3.5, 413: 3.5,
-            114: 4.5, 214: 4.5, 314: 4.5, 414: 4.5
-        };
-    
         let score = 0;
         for (let card of wonFolds) {
-            if (points.hasOwnProperty(card)) {
-                score += points[card];
+            if (cardPoints.hasOwnProperty(card)) {
+                score += cardPoints[card];
             } else {
                 score += 0.5;
             }
@@ -243,30 +235,30 @@ export default class Gameplay {
     }
 
     isGameOver(): GameOver | undefined {
-        if (!this.decks.find((deck: number[]) => deck.length !== 0)) {
-            const oudlersNb = this.game.won.filter((card: number) => [0, 1, 21].includes(card)).length;
-            
-            const scoreToWin: {[key: number]: number} = {
-                0: 56,
-                1: 51,
-                2: 41,
-                3: 36
-            };
+        if (this.decks.find((deck: number[]) => deck.length !== 0)) return;
 
-            return { 
-                winner: this.game.score >= scoreToWin[oudlersNb] ? 'Le preneur' : 'La défense',
-                oudlersNb: oudlersNb,
-                pointsNb: this.game.score,
-                score: this.contract ? (25 + this.game.score - scoreToWin[oudlersNb]) * this.contract : 0,
-            };
-        }
-        return;
+        const oudlersNb = this.game.won.filter((card: number) => [0, 1, 21].includes(card)).length;
+        
+        const takerWins = this.game.score >= scoreToWin[oudlersNb];
+        const rawScore = this.contract ? (25 + Math.abs(this.game.score - scoreToWin[oudlersNb])) * this.contract : 0;
+        const score = (takerWins ? 1 : -1) * (this.decks.length - 1) * rawScore;
+        return { 
+            winner: takerWins ? 'Le preneur' : 'La défense',
+            oudlersNb,
+            pointsNb: this.game.score,
+            score,
+        };
     }
 
     nextTurn(): number {
         this.currentTurn = (this.currentTurn + 1) % this.playerNb;
         this.totalTurn++;
         return this.currentTurn;
+    }
+
+    getPhase(value: number | undefined = undefined): number {
+        if (value !== undefined) this.game.phase = value;
+        return this.game.phase;
     }
 
     sortDeck(deck: number[]): number[] { return deck.sort((a: number, b: number) => a - b); }
@@ -276,6 +268,7 @@ export default class Gameplay {
 
     getTurn(): number { return this.currentTurn; }
     getTaker(): number { return this.game.takers[0]; }
+    getContract(): Contract { return { type: this.contract, king: this.kingCalled }; }
 
     getDeck(playerIndex: number): number[] { return this.decks[playerIndex]; }
     getDecks(): number[][] { return this.decks; }
@@ -304,6 +297,7 @@ export default class Gameplay {
         this.decks = Array.from({ length: this.playerNb }, () => []);
         this.chien = [];
         this.game = {
+            phase: 0,
             fold: [],
             takers: [],
             won: [],

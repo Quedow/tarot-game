@@ -1,26 +1,29 @@
 import { Socket } from "socket.io";
 
-export const gamePhases: {[key: string]: string} = {
-    "-1": 'Attendez le tour des autres joueurs...',
-    "1": 'Prendre ou passer ?',
-    "2": 'Faites votre chien...',
-    "3": 'La partie est en cours !',
-    "4": 'Partie terminée !'
-};
+export enum gamePhases {
+    WAITING = 'Attendez le tour des autres joueurs...',
+    TAKE_OR_PASS = 'Prendre ou passer ?',
+    PRE_GAME = 'Faites votre chien...',
+    IN_GAME = 'La partie est en cours !',
+    END_GAME = 'Partie terminée !'
+}
 
-export const contracts: {[key: number]: string} = {
-    1: "Petite",
-    2: "Garde",
-    4: "Garde sans",
-    6: "Garde contre",
-};
+// Client side
 
-export interface Client { 
-    id?: string;
-    socket?: Socket;
+export interface rGameState {
+    id: string;
     pseudo: string;
-    deckIndex?: number;
-};
+    deck: number[];
+    fold: Fold;
+    phase: number;
+    turnId: string;
+    score: number;
+}
+
+export interface rPlayer  {
+    id: string;
+    pseudo: string;
+}
 
 export interface rTaker {
     id: string;
@@ -28,10 +31,19 @@ export interface rTaker {
     king?: number;
 }
 
-export interface rPlayer  {
-    id?: string;
-    pseudo: string;
+export interface rBid {
+    contract: number;
+    king: number
 }
+
+// Server side
+
+export interface Client { 
+    id: string;
+    socket: Socket;
+    pseudo: string;
+    deckIndex?: number;
+};
 
 export interface Player {
     pseudo: string;
@@ -39,6 +51,7 @@ export interface Player {
 }
 
 export interface Game {
+    phase: number;
     fold: Play[];
     takers: number[];
     won: number[];
@@ -47,9 +60,9 @@ export interface Game {
     giveOrKeepExcuse: 0 | 0.5 | -0.5;
 };
 
-export interface Bid {
-    contract: number;
-    king: number
+export interface Contract {
+    type?: number;
+    king?: number
 }
 
 export interface Play {
@@ -66,17 +79,5 @@ export interface GameOver {
     winner: string;
     oudlersNb: number;
     pointsNb: number;
-    score: number;
-}
-
-export interface rGameState {
-    id: string;
-    players: rPlayer[];
-    phase: number;
-    deck: number[];
-    turnId: string;
-    takerId: string;
-    bid: Bid;
-    fold: Fold;
     score: number;
 }
