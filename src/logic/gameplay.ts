@@ -235,7 +235,7 @@ export default class Gameplay {
     }
 
     isGameOver(): GameOver | undefined {
-        if (!this.decks.find((deck: number[]) => deck.length !== 0)) return; // To revert
+        if (this.decks.find((deck: number[]) => deck.length !== 0)) return;
 
         const oudlersNb = this.game.won.filter((card: number) => [0, 1, 21].includes(card)).length;
         
